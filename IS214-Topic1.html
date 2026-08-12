@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 — Topic 1: Programming Languages and Paradigms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --paper:#FFFFFF;
+    --paper-dim:#F2F2F0;
+    --ink:#1D1B16;
+    --ink-soft:#5B5748;
+    --rule:#DEDBCF;
+    --syntax:#2B4C7E;
+    --syntax-bg:#E8EDF5;
+    --semantics:#B5651D;
+    --semantics-bg:#F6E9DA;
+    --execution:#2F6E4E;
+    --execution-bg:#E4EFE8;
+    --radius:10px;
+  }
+  html{height:100%;}
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Inter',sans-serif; line-height:1.65; font-size:15px;
+    -webkit-font-smoothing:antialiased;
+    height:100vh; display:flex; flex-direction:column; overflow:hidden;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 24px; width:100%;
+    flex:1 1 auto; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:600; line-height:1.15; margin:0;}
+  code, pre, .mono{font-family:'IBM Plex Mono',monospace;}
+  code{background:var(--paper-dim); padding:2px 6px; border-radius:5px; font-size:0.88em;}
+  pre{background:#22201A; color:#F4F1E8; padding:18px 20px; border-radius:var(--radius); overflow-x:auto; font-size:0.92em; line-height:1.6;}
+  pre code{background:none; padding:0; color:inherit;}
+  a{color:var(--syntax);}
+
+  /* ===== HERO ===== */
+  .hero{padding:72px 24px 48px; text-align:center; border-bottom:1px solid var(--rule);}
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:18px;}
+  .hero h1{font-size:44px; max-width:640px; margin:0 auto;}
+  .triad{display:flex; justify-content:center; gap:0; margin:40px auto 0; max-width:560px;}
+  .triad-node{flex:1; padding:18px 10px; border-top:3px solid; }
+  .triad-node h4{font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.08em; margin:0 0 4px;}
+  .triad-node p{margin:0; font-size:14px; color:var(--ink-soft);}
+  .triad-node.syn{border-color:var(--syntax);} .triad-node.syn h4{color:var(--syntax);}
+  .triad-node.sem{border-color:var(--semantics);} .triad-node.sem h4{color:var(--semantics);}
+  .triad-node.exe{border-color:var(--execution);} .triad-node.exe h4{color:var(--execution);}
+
+  /* ===== PAGE STRUCTURE ===== */
+  .page{padding:56px 0; border-bottom:1px solid var(--rule);}
+  .page:last-of-type{border-bottom:none;}
+  .page-label{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-soft); letter-spacing:0.08em; margin-bottom:10px;}
+  .page h2{font-size:29px; margin-bottom:22px;}
+  .page p{margin:0 0 16px;}
+  .lede{font-size:19px; font-family:'Fraunces',serif; font-weight:500; color:var(--ink);}
+  ul,ol{padding-left:22px; margin:0 0 16px;}
+  li{margin-bottom:6px;}
+
+  /* ===== DIAGRAM COMPONENTS ===== */
+  .diagram{background:var(--paper-dim); border-radius:var(--radius); padding:30px 24px; margin:24px 0; text-align:center;}
+  .flow{display:flex; flex-direction:column; align-items:center; gap:0;}
+  .flow-box{background:var(--paper); border:1.5px solid var(--ink); border-radius:8px; padding:10px 20px; font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:500;}
+  .flow-box.process{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .flow-arrow{font-size:20px; color:var(--ink-soft); line-height:1; margin:4px 0;}
+  .flow-row{display:flex; gap:36px; justify-content:center; flex-wrap:wrap;}
+
+  .pipeline{display:flex; flex-direction:column; align-items:center;}
+  .pipeline .artifact{font-family:'IBM Plex Mono',monospace; font-size:13.5px; font-weight:600; letter-spacing:0.03em; padding:8px 16px; border-radius:6px; background:var(--paper); border:1.5px solid var(--rule);}
+  .pipeline .process{font-family:'IBM Plex Mono',monospace; font-size:13px; padding:9px 18px; border-radius:6px; margin:2px 0; color:#fff;}
+  .pipeline .p1{background:var(--syntax);} .pipeline .p2{background:var(--syntax);}
+  .pipeline .p3{background:var(--semantics);}
+  .pipeline .p4,.pipeline .p5,.pipeline .p6{background:var(--execution);}
+  .pipeline .arr{font-size:16px; color:var(--ink-soft); margin:2px 0;}
+
+  .token-row{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:20px 0;}
+  .token{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; background:var(--syntax-bg); color:var(--syntax); padding:6px 12px; border-radius:6px;}
+
+  .tree{font-family:'IBM Plex Mono',monospace; font-size:14px; text-align:left; display:inline-block; line-height:1.9;}
+  .tree .t1{color:var(--semantics); font-weight:600;}
+  .tree .t2{color:var(--syntax); font-weight:600;}
+
+  /* ===== CODE COMPARISON GRID ===== */
+  .lang-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:24px 0;}
+  @media(max-width:640px){.lang-grid{grid-template-columns:1fr;}}
+  .lang-card{background:var(--paper-dim); border-radius:var(--radius); padding:16px 18px;}
+  .lang-card h4{font-family:'IBM Plex Mono',monospace; font-size:13px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-soft); margin:0 0 6px;}
+  .lang-card p{font-size:13.5px; color:var(--ink-soft); margin:0 0 10px;}
+  .lang-card pre{margin:0; font-size:13px; padding:12px 14px;}
+
+  /* ===== TABLE ===== */
+  table{width:100%; border-collapse:collapse; margin:20px 0; font-size:15px;}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--rule);}
+  th{font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft); font-weight:600;}
+
+  /* ===== CALLOUTS ===== */
+  .callout{border-left:3px solid var(--ink); padding:4px 0 4px 20px; margin:24px 0; font-family:'Fraunces',serif; font-size:19px; font-weight:500;}
+  .qbox{background:var(--paper-dim); border-radius:var(--radius); padding:22px 24px; margin:24px 0;}
+  .qbox .qlabel{font-family:'IBM Plex Mono',monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-soft); margin-bottom:8px;}
+
+  /* ===== EMBEDDED CHECK (MCQ) ===== */
+  .check{background:var(--syntax-bg); border-radius:var(--radius); padding:22px 24px; margin:28px 0;}
+  .check .qlabel{font-family:'IBM Plex Mono',monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:var(--syntax); margin-bottom:8px; font-weight:600;}
+  .check .qtext{font-weight:600; margin-bottom:14px;}
+  .opt{display:block; width:100%; text-align:left; background:var(--paper); border:1.5px solid var(--rule); border-radius:8px; padding:10px 14px; margin-bottom:8px; font-family:'Inter',sans-serif; font-size:15px; cursor:pointer; transition:border-color .15s;}
+  .opt:hover{border-color:var(--syntax);}
+  .opt.correct{border-color:var(--execution); background:var(--execution-bg);}
+  .opt.wrong{border-color:#B5432E; background:#F6E2DC;}
+  .fb{margin-top:10px; font-size:14.5px; color:var(--ink-soft);}
+
+  /* ===== REVEAL (open-ended) ===== */
+  .reveal-btn{font-family:'IBM Plex Mono',monospace; font-size:13px; background:var(--ink); color:var(--paper); border:none; border-radius:6px; padding:9px 16px; cursor:pointer;}
+  .reveal-content{margin-top:14px; padding-top:14px; border-top:1px dashed var(--rule); display:none; font-size:15px; color:var(--ink-soft);}
+  .reveal-content.show{display:block;}
+
+  /* ===== SUMMARY LIST ===== */
+  .summary-list{counter-reset:sitem;}
+  .summary-list li{list-style:none; counter-increment:sitem; position:relative; padding-left:38px; margin-bottom:14px;}
+  .summary-list li::before{content:counter(sitem); position:absolute; left:0; top:0; width:26px; height:26px; border-radius:50%; background:var(--ink); color:var(--paper); font-family:'IBM Plex Mono',monospace; font-size:12px; display:flex; align-items:center; justify-content:center;}
+
+  .tag{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:0.05em; padding:3px 9px; border-radius:5px; margin-right:6px;}
+  .tag.ungraded{background:var(--execution-bg); color:var(--execution);}
+  .tag.graded{background:var(--semantics-bg); color:var(--semantics);}
+
+  footer{text-align:center; padding:40px 24px; color:var(--ink-soft); font-size:13px; font-family:'IBM Plex Mono',monospace;}
+
+  html{scroll-behavior:smooth;}
+  body{padding-bottom:0;}
+  .wrap{padding-bottom:0;}
+
+  /* ===== TOPBAR ===== */
+  .topbar{
+    flex:0 0 auto; background:var(--paper);
+    border-bottom:1px solid var(--rule);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 24px;
+  }
+  .topbar .brand{font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:0.06em; color:var(--ink-soft);}
+  .topbar .brand strong{color:var(--ink);}
+  .topbar .triad-strip{display:flex; width:120px; height:4px; border-radius:2px; overflow:hidden;}
+  .topbar .triad-strip span{flex:1;}
+  .topbar .triad-strip .s1{background:var(--syntax);}
+  .topbar .triad-strip .s2{background:var(--semantics);}
+  .topbar .triad-strip .s3{background:var(--execution);}
+  .topbar .counter{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-soft);}
+
+  /* ===== SLIDES ===== */
+  .slide{display:none; padding:48px 0 40px; animation:fadeIn .25s ease;}
+  .slide.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+  .hero-inline{text-align:center; padding-bottom:36px; margin-bottom:36px; border-bottom:1px solid var(--rule);}
+  .hero-inline h1{font-size:36px; max-width:600px; margin:0 auto;}
+  .hero-inline .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:16px;}
+  .hero-inline .triad{display:flex; justify-content:center; gap:0; margin:32px auto 0; max-width:520px;}
+
+  /* ===== BOTTOM NAV ===== */
+  .navbar{
+    flex:0 0 auto; background:var(--paper);
+    border-top:1px solid var(--rule);
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:14px 24px;
+  }
+  .navbtn{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:14.5px;
+    background:var(--ink); color:var(--paper); border:none; border-radius:8px;
+    padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px;
+  }
+  .navbtn:disabled{background:var(--paper-dim); color:var(--ink-soft); cursor:not-allowed;}
+  .navbtn.secondary{background:var(--paper-dim); color:var(--ink);}
+  .navbtn.secondary:hover:not(:disabled){background:var(--rule);}
+  .progress-track{flex:1; max-width:280px; height:4px; background:var(--paper-dim); border-radius:2px; overflow:hidden; display:none;}
+  @media(min-width:560px){.progress-track{display:block;}}
+  .progress-fill{height:100%; background:var(--ink); border-radius:2px; transition:width .25s ease;}
+
+  .end-note{text-align:center; padding:60px 24px; color:var(--ink-soft);}
+  .end-note h3{font-size:22px; margin-bottom:10px;}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">IS 214 · <strong>Topic 1</strong></div>
+  <div class="triad-strip"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+  <div class="counter"><span id="curNum">1</span> / <span id="totalNum">17</span></div>
+</div>
+
+<div class="wrap">
+<section class="slide active" id="slide-0">
+<div class="hero-inline">
+<div class="eyebrow">IS 214 · Topic 1 · Study Guide</div>
+<h1>Programming Languages and Paradigms</h1>
+<div class="triad">
+<div class="triad-node syn"><h4>SYNTAX</h4><p>what is valid</p></div>
+<div class="triad-node sem"><h4>SEMANTICS</h4><p>what it means</p></div>
+<div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
+</div>
+</div>
+<p class="lede">Programming languages are not merely different ways of writing the same instructions. They embody different ways of expressing computation.</p>
+<p>In this topic, we establish the basic vocabulary needed for the rest of IS 214: what a programming language is, why languages differ, how they can be classified, how programs are executed, and how language design involves trade-offs.</p>
+<p><strong>Python will be our primary language throughout the course.</strong></p>
+<h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
+<ol>
+<li>Explain what a programming language is in terms of syntax, semantics, and computation.</li>
+<li>Explain why programming languages have evolved and why different languages are designed for different purposes.</li>
+<li>Classify programming languages according to abstraction level, programming paradigm, application domain, and implementation approach.</li>
+<li>Distinguish imperative and declarative programming and recognize common paradigms within each.</li>
+<li>Explain the basic difference between compilation and interpretation.</li>
+<li>Describe the major phases involved in translating a program, from source code to executable form.</li>
+<li>Evaluate programming languages using criteria such as readability, writability, reliability, and cost.</li>
+</ol>
+
+</section>
+<section class="slide" id="slide-1">
+
+<div class="page-label">Page 1</div>
+<h2>What Is a Programming Language?</h2>
+<p><strong>What exactly is a programming language?</strong> You probably already have an intuitive answer: "It's a language that lets us tell a computer what to do." That's not wrong, but it is incomplete.</p>
+<p>A programming language provides a <strong>formal way to describe computation</strong>. It defines what can be written, how those elements can be combined, and what those constructions mean when executed.</p>
+<p>This gives us three ideas that will recur throughout this course:</p>
+<div class="diagram">
+<div class="flow-box">PROGRAMMING LANGUAGE</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-row">
+<div style="text-align:center;">
+<div class="flow-box" style="border-color:var(--syntax); color:var(--syntax);">SYNTAX</div>
+<p style="font-size:13px; color:var(--ink-soft); margin-top:8px;">What is valid</p>
+</div>
+<div style="text-align:center;">
+<div class="flow-box" style="border-color:var(--semantics); color:var(--semantics);">SEMANTICS</div>
+<p style="font-size:13px; color:var(--ink-soft); margin-top:8px;">What it means</p>
+</div>
+<div style="text-align:center;">
+<div class="flow-box" style="border-color:var(--execution); color:var(--execution);">EXECUTION</div>
+<p style="font-size:13px; color:var(--ink-soft); margin-top:8px;">What happens</p>
+</div>
+</div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">This becomes one of the foundational diagrams of the course — you'll see it again.</p>
+<div class="check" data-answer="1">
+<div class="qlabel">Check 1</div>
+<div class="qtext">Which statement best describes syntax?</div>
+<button class="opt">What a program does when executed</button>
+<button class="opt">The rules governing the structure of valid programs</button>
+<button class="opt">The speed at which a program executes</button>
+<button class="opt">The hardware used to execute a program</button>
+<div class="fb"></div>
+</div>
+
+</section>
+<section class="slide" id="slide-2">
+
+<div class="page-label">Page 2</div>
+<h2>One Computation, Many Languages</h2>
+<p>Here's the same computation — print "Hello, World!" — written four different ways.</p>
+<div class="lang-grid">
+<div class="lang-card"><h4>Assembly</h4><p>Low-level, explicit interaction with machine-oriented operations.</p><pre><code>mov ah, 9
+mov dx, offset msg
+int 21h</code></pre></div>
+<div class="lang-card"><h4>Java</h4><p>Object-oriented and strongly structured.</p><pre><code>public class Hello {
+  public static void main(String[] a) {
+    System.out.println("Hello, World!");
+  }
+}</code></pre></div>
+<div class="lang-card"><h4>Scheme</h4><p>Functional style.</p><pre><code>(define (hello)
+  (display "Hello, World!"))</code></pre></div>
+<div class="lang-card"><h4>Python</h4><p>Compact, high-level syntax.</p><pre><code>print("Hello, World!")</code></pre></div>
+</div>
+<div class="callout">All four programs produce essentially the same observable result. Why do they look so different?</div>
+<p>This is our first major conceptual question. The answer leads directly into: <strong>programming languages make different design choices about how computation is expressed.</strong></p>
+
+</section>
+<section class="slide" id="slide-3">
+
+<div class="page-label">Page 3</div>
+<h2>Why Study Programming Languages?</h2>
+<p>You don't study programming languages because you need to memorize twenty languages. You study them because understanding languages helps you:</p>
+<ul>
+<li>recognize patterns across languages;</li>
+<li>choose appropriate languages for particular problems;</li>
+<li>learn unfamiliar languages more quickly;</li>
+<li>understand why certain constructs behave the way they do; and</li>
+<li>write better programs.</li>
+</ul>
+<div class="qbox">
+<div class="qlabel">Embedded check · reflection</div>
+<p style="margin-bottom:0;"><strong>Suppose you already know Python. Why would understanding JavaScript, C, SQL, or Prolog make you a better Python programmer?</strong></p>
+</div>
+
+</section>
+<section class="slide" id="slide-4">
+
+<div class="page-label">Page 4</div>
+<h2>Why Are There So Many Programming Languages?</h2>
+<p>A language exists because someone made choices. For example:</p>
+<ul>
+<li>Should memory management be explicit?</li>
+<li>Should variables have fixed types?</li>
+<li>Should programs describe <em>how</em> to solve a problem, or <em>what</em> result is wanted?</li>
+<li>Should functions be ordinary values?</li>
+<li>Should objects be central to the language?</li>
+<li>Should the language prioritize safety, performance, simplicity, or programmer productivity?</li>
+</ul>
+<p>There is no single programming language that is best for every purpose.</p>
+<div class="callout">Programming-language design is therefore a collection of trade-offs.</div>
+
+</section>
+<section class="slide" id="slide-5">
+
+<div class="page-label">Page 5</div>
+<h2>Programming Paradigms</h2>
+<p>A programming paradigm is a way of thinking about and organizing computation. Instead of asking "what syntax does this language use?" we ask: <strong>"what model of computation does this language encourage me to use?"</strong></p>
+<h3 style="font-size:18px; margin:28px 0 10px;">Imperative programming</h3>
+<p>Emphasizes <strong>how</strong> a computation is performed — a program describes a sequence of actions that changes program state.</p>
+<pre><code>total = 0
+for x in numbers:
+    total = total + x</code></pre>
+<p>Notice what the program tells us: create <code>total</code>; iterate over <code>numbers</code>; take the current value; add it to <code>total</code>; update <code>total</code>. This is an imperative description of the computation.</p>
+<div class="check" data-answer="2">
+<div class="qlabel">Check 2</div>
+<div class="qtext">Which programming style is most evident in the code above?</div>
+<button class="opt">Logic</button>
+<button class="opt">Functional</button>
+<button class="opt">Imperative</button>
+<button class="opt">Declarative</button>
+<div class="fb"></div>
+</div>
+<h3 style="font-size:18px; margin:28px 0 10px;">Declarative programming</h3>
+<p>Emphasizes <strong>what</strong> result or relationship is wanted, rather than specifying every step. For example, SQL:</p>
+<pre><code>SELECT name
+FROM students
+WHERE grade &gt;= 1.5;</code></pre>
+<p>We don't tell the database to scan this disk block, then compare this row, then move to the next row. We describe <strong>what data we want</strong>.</p>
+
+</section>
+<section class="slide" id="slide-6">
+
+<div class="page-label">Page 6</div>
+<h2>Major Programming Paradigms</h2>
+<table>
+<tr><th>Paradigm</th><th>Main idea</th><th>Example</th></tr>
+<tr><td>Imperative</td><td>Describe how computation proceeds</td><td>C</td></tr>
+<tr><td>Procedural</td><td>Organize computation into procedures/functions</td><td>C, Pascal</td></tr>
+<tr><td>Object-oriented</td><td>Organize programs around objects and their behavior</td><td>Java</td></tr>
+<tr><td>Functional</td><td>Express computation through functions</td><td>Lisp, Haskell</td></tr>
+<tr><td>Logic</td><td>Express facts and rules from which conclusions are derived</td><td>Prolog</td></tr>
+<tr><td>Declarative</td><td>Describe what should be achieved rather than how</td><td>SQL</td></tr>
+</table>
+<div class="callout">These categories are not mutually exclusive.</div>
+<p>Python, for example, supports imperative, procedural, object-oriented, and functional programming styles. That becomes important later when we examine Python as a language.</p>
+
+</section>
+<section class="slide" id="slide-7">
+
+<div class="page-label">Page 7</div>
+<h2>Python Is Not "An Object-Oriented Language"</h2>
+<p>Consider:</p>
+<pre><code>total = 0
+for x in numbers:
+    total += x</code></pre>
+<p>versus:</p>
+<pre><code>total = sum(numbers)</code></pre>
+<p>Both are Python. The first emphasizes explicit state changes and iteration. The second uses a higher-level abstraction.</p>
+<p>Now consider:</p>
+<pre><code>students = [
+    {"name": "Ana", "grade": 1.25},
+    {"name": "Ben", "grade": 1.75}
+]
+top_students = list(
+    filter(lambda s: s["grade"] &lt;= 1.5, students)
+)</code></pre>
+<p>This uses a more functional style.</p>
+<div class="callout">A programming language can support multiple paradigms. A program can also use multiple paradigms.</div>
+<p>This will matter later when we discuss Python's design.</p>
+
+</section>
+<section class="slide" id="slide-8">
+
+<div class="page-label">Page 8</div>
+<h2>Classifying Programming Languages</h2>
+<p>There isn't just one way to classify a programming language. We can classify languages according to:</p>
+<h3 style="font-size:16px; margin:24px 0 8px;">1. Abstraction level</h3>
+<p>Low-level (machine language, assembly) vs. high-level (C, Java, Python) — the key difference is how much of the underlying machine the programmer has to deal with.</p>
+<h3 style="font-size:16px; margin:24px 0 8px;">2. Paradigm</h3>
+<p>Imperative, object-oriented, functional, logic, etc.</p>
+<h3 style="font-size:16px; margin:24px 0 8px;">3. Application domain</h3>
+<p>Scientific, business, AI, systems, scripting, and special-purpose languages.</p>
+<h3 style="font-size:16px; margin:24px 0 8px;">4. Implementation approach</h3>
+<p>Compiled, interpreted, or combinations of the two.</p>
+<div class="callout">These classifications describe different dimensions.</div>
+<p>Python can simultaneously be <strong>high-level + multi-paradigm + general-purpose + interpreted/bytecode-based</strong>. That's much more useful than memorizing a single category.</p>
+<div class="check" data-answer="2">
+<div class="qlabel">Check 3</div>
+<div class="qtext">Which of the following is a classification by abstraction level?</div>
+<button class="opt">Functional vs. imperative</button>
+<button class="opt">General-purpose vs. domain-specific</button>
+<button class="opt">High-level vs. low-level</button>
+<button class="opt">Compiled vs. interpreted</button>
+<div class="fb"></div>
+</div>
+
+</section>
+<section class="slide" id="slide-9">
+
+<div class="page-label">Page 9</div>
+<h2>How Do We Judge a Programming Language?</h2>
+<ul>
+<li><strong>Readability</strong> — how easily can humans understand programs written in the language?</li>
+<li><strong>Writability</strong> — how easily can programmers express solutions?</li>
+<li><strong>Reliability</strong> — how likely is the language to help programmers produce programs that behave correctly?</li>
+<li><strong>Cost</strong> — what does it cost to learn, develop, execute, maintain, and support programs written in the language?</li>
+</ul>
+<p>These expand into design factors: simplicity, orthogonality, abstraction, expressivity, type checking, exception handling, and implementation/tool support.</p>
+<div class="qbox">
+<div class="qlabel">Embedded thought question</div>
+<p style="margin-bottom:0;"><strong>Is the most writable language necessarily the best language?</strong></p>
+<button class="reveal-btn" style="margin-top:14px;">Reveal answer</button>
+<div class="reveal-content">No. Giving programmers many different ways to express the same operation may make a language powerful — but also harder to learn, read, and maintain. This introduces the idea of trade-offs directly: increasing writability can come at the cost of readability.</div>
+</div>
+<div class="check open" style="margin-top:24px;">
+<div class="qlabel">Check 5 · reflection</div>
+<div class="qtext">Why might a language designer deliberately choose a more verbose syntax?</div>
+<button class="reveal-btn">Reveal expected ideas</button>
+<div class="reveal-content">Readability, explicitness, reliability, maintainability, reduced ambiguity.</div>
+</div>
+
+</section>
+<section class="slide" id="slide-10">
+
+<div class="page-label">Page 10</div>
+<h2>Compilation and Interpretation</h2>
+<p>Now we move from <strong>how languages are designed</strong> to <strong>how programs actually get executed.</strong></p>
+<h3 style="font-size:18px; margin:28px 0 10px;">Compilation</h3>
+<p>A compiler translates a program into another representation before execution.</p>
+<div class="diagram"><div class="flow">
+<div class="flow-box">Source Program</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">Compiler</div><div class="flow-arrow">↓</div>
+<div class="flow-box">Target Program</div><div class="flow-arrow">↓</div>
+<div class="flow-box">Execution</div>
+</div></div>
+<h3 style="font-size:18px; margin:28px 0 10px;">Interpretation</h3>
+<p>An interpreter executes a program by processing it during execution.</p>
+<div class="diagram"><div class="flow">
+<div class="flow-box">Source Program</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">Interpreter</div><div class="flow-arrow">↓</div>
+<div class="flow-box">Execution</div>
+</div></div>
+<p>The traditional distinction is useful, but: <strong>real programming-language implementations are often hybrids.</strong> Don't leave this topic thinking "Python = interpreted, Java = compiled" and that's the end of the story — we'll revisit this in Topic 10: Runtime, Interpretation &amp; Python Execution.</p>
+
+</section>
+<section class="slide" id="slide-11">
+
+<div class="page-label">Page 11</div>
+<h2>What Does a Compiler Actually Do?</h2>
+<div class="diagram">
+<div class="pipeline">
+<div class="artifact">SOURCE CODE</div>
+<div class="arr">↓</div>
+<div class="process p1">Lexical Analysis</div>
+<div class="arr">↓</div>
+<div class="artifact">TOKENS</div>
+<div class="arr">↓</div>
+<div class="process p2">Syntax Analysis</div>
+<div class="arr">↓</div>
+<div class="artifact">SYNTAX TREE</div>
+<div class="arr">↓</div>
+<div class="process p3">Semantic Analysis</div>
+<div class="arr">↓</div>
+<div class="artifact">SEMANTIC MODEL</div>
+<div class="arr">↓</div>
+<div class="process p4">Intermediate Code Generation</div>
+<div class="arr">↓</div>
+<div class="artifact">INTERMEDIATE CODE</div>
+<div class="arr">↓</div>
+<div class="process p5">Code Optimization</div>
+<div class="arr">↓</div>
+<div class="process p6">Code Generation</div>
+<div class="arr">↓</div>
+<div class="artifact">TARGET CODE</div>
+</div>
+</div>
+<p>Each phase takes the previous phase's output and transforms it into something more meaningful: characters become tokens, tokens become a tree, and a checked, meaningful structure eventually becomes code that runs.</p>
+<div class="callout">A program is not magically "run." A language implementation has to determine what the source code means and how to execute that meaning.</div>
+<p style="font-size:14px; color:var(--ink-soft);">We will examine these stages in detail in Topics 2 and 3.</p>
+
+</section>
+<section class="slide" id="slide-13">
+
+<div class="page-label">Page 12</div>
+<h2>Errors Have a Location</h2>
+<h3 style="font-size:16px; margin:24px 0 8px; color:var(--syntax);">Lexical error</h3>
+<pre><code>x = 10 @ 5</code></pre>
+<p>Suppose <code>@</code> isn't a valid token in our language. The problem: the characters cannot be converted into valid tokens.</p>
+<h3 style="font-size:16px; margin:24px 0 8px; color:var(--syntax);">Syntax error</h3>
+<pre><code>if x &gt; 10
+print(x)</code></pre>
+<p>The tokens exist, but their arrangement violates the grammar.</p>
+<h3 style="font-size:16px; margin:24px 0 8px; color:var(--semantics);">Semantic error</h3>
+<pre><code>x = "hello"
+y = x + 5</code></pre>
+<p>The structure may be syntactically valid, but the operation may not have the required meaning.</p>
+
+</section>
+<section class="slide" id="slide-14">
+
+<div class="page-label">Page 13</div>
+<h2>The Big Picture</h2>
+<p>We started with: <strong>what is a programming language?</strong> Now you should have a richer answer.</p>
+<p>A programming language defines a way of expressing computation through <strong>syntax + semantics + execution mechanisms</strong>. Different languages make different choices about abstraction, paradigm, syntax, types, control, execution, safety, performance, and programmer productivity — and language implementations translate those abstractions into executable behavior.</p>
+
+</section>
+<section class="slide" id="slide-15">
+
+<div class="page-label">Topic 1 Summary</div>
+<h2>Remember these ideas</h2>
+<ol class="summary-list">
+<li>A programming language provides a formal way to describe computation.</li>
+<li><strong>Syntax</strong> determines what programs are structurally valid.</li>
+<li><strong>Semantics</strong> determines what valid programs mean.</li>
+<li>Programming languages differ because they make different design choices.</li>
+<li>Programming paradigms provide different ways of thinking about computation.</li>
+<li>Languages can be classified along several dimensions; these classifications are not mutually exclusive.</li>
+<li>Programming languages can be evaluated using criteria such as readability, writability, reliability, and cost.</li>
+<li>Compilation and interpretation are implementation approaches, and real systems often combine them.</li>
+<li>Language implementations analyze programs in stages, including lexical, syntax, and semantic analysis.</li>
+<li>The concepts introduced here will be developed throughout the rest of IS 214.</li>
+</ol>
+
+</section>
+<section class="slide" id="slide-16">
+
+<div class="page-label">Learning Activity · Programming Language Exploration</div>
+<h2>Optional, ungraded exploration <span class="tag ungraded">Ungraded</span></h2>
+<p>Choose three programming languages that you have used, studied, or are curious about. For each language, identify:</p>
+<ol>
+<li>its abstraction level;</li>
+<li>its dominant programming paradigm(s);</li>
+<li>its typical application domain(s);</li>
+<li>whether it is commonly compiled, interpreted, or uses a hybrid approach; and</li>
+<li>one design characteristic that you think makes the language useful.</li>
+</ol>
+<div class="qbox">
+<p style="margin-bottom:0;"><strong>If you had to choose one language for a new software project, what factors would influence your choice?</strong></p>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">No paper. No research writing. No citations required — use what you already know.</p>
+
+</section>
+<section class="slide" id="slide-17">
+
+<div class="page-label">Learning Quiz 1</div>
+<h2>The graded Moodle quiz <span class="tag graded">Graded</span></h2>
+<p>A short graded quiz covering this topic's material is available on MyPortal.</p>
+
+</section>
+
+<div class="end-note" id="endNote" style="display:none;">
+  <h3>End of Topic 1</h3>
+  <p>Use Previous to review any page, or head to this week's activities on MyPortal.</p>
+</div>
+</div>
+
+<div class="navbar">
+  <button class="navbtn secondary" id="prevBtn">← Previous</button>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <button class="navbtn" id="nextBtn">Next →</button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var idx = 0;
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var curNum = document.getElementById('curNum');
+  var totalNum = document.getElementById('totalNum');
+  var progressFill = document.getElementById('progressFill');
+  var endNote = document.getElementById('endNote');
+  totalNum.textContent = total;
+
+  function render(){
+    slides.forEach(function(s, i){ s.classList.toggle('active', i === idx); });
+    curNum.textContent = idx + 1;
+    progressFill.style.width = ((idx + 1) / total * 100) + '%';
+    prevBtn.disabled = (idx === 0);
+    nextBtn.textContent = (idx === total - 1) ? 'Finish' : 'Next →';
+    endNote.style.display = 'none';
+    document.querySelector('.wrap').scrollTop = 0;
+  }
+  prevBtn.addEventListener('click', function(){
+    if(idx > 0){ idx--; render(); }
+  });
+  nextBtn.addEventListener('click', function(){
+    if(idx < total - 1){ idx++; render(); }
+    else { endNote.style.display = 'block'; endNote.scrollIntoView({behavior:'smooth'}); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowRight') nextBtn.click();
+    if(e.key === 'ArrowLeft') prevBtn.click();
+  });
+  render();
+})();
+
+document.querySelectorAll('.check:not(.open)').forEach(function(check){
+  var correctIdx = parseInt(check.dataset.answer, 10);
+  var opts = check.querySelectorAll('.opt');
+  var fb = check.querySelector('.fb');
+  opts.forEach(function(btn, idx){
+    btn.addEventListener('click', function(){
+      opts.forEach(function(b){ b.classList.remove('correct','wrong'); });
+      if(idx === correctIdx){
+        btn.classList.add('correct');
+        fb.textContent = 'Correct.';
+      } else {
+        btn.classList.add('wrong');
+        opts[correctIdx].classList.add('correct');
+        fb.textContent = 'Not quite — the correct answer is highlighted above.';
+      }
+    });
+  });
+});
+document.querySelectorAll('.reveal-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var content = btn.nextElementSibling;
+    content.classList.toggle('show');
+    btn.textContent = content.classList.contains('show') ? 'Hide answer' : btn.textContent.replace('Hide','Reveal');
+  });
+});
+</script>
+</body>
+</html>
