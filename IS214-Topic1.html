@@ -136,7 +136,6 @@
   .topbar{
     flex:0 0 auto; background:var(--paper);
     border-bottom:1px solid var(--rule);
-    display:flex; align-items:center; justify-content:space-between;
     padding:12px 24px;
   }
   .topbar .brand{font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:0.06em; color:var(--ink-soft);}
@@ -161,9 +160,9 @@
   .navbar{
     flex:0 0 auto; background:var(--paper);
     border-top:1px solid var(--rule);
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
     padding:14px 24px;
   }
+  .bar-inner{max-width:760px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%;}
   .navbtn{
     font-family:'Inter',sans-serif; font-weight:600; font-size:14.5px;
     background:var(--ink); color:var(--paper); border:none; border-radius:8px;
@@ -184,9 +183,11 @@
 <body>
 
 <div class="topbar">
-  <div class="brand">IS 214 · <strong>Topic 1</strong></div>
-  <div class="triad-strip"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
-  <div class="counter"><span id="curNum">1</span> / <span id="totalNum">17</span></div>
+  <div class="bar-inner">
+    <div class="brand">IS 214 · <strong>Topic 1</strong></div>
+    <div class="triad-strip"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+    <div class="counter"><span id="curNum">1</span> / <span id="totalNum">17</span></div>
+  </div>
 </div>
 
 <div class="wrap">
@@ -564,9 +565,11 @@ y = x + 5</code></pre>
 </div>
 
 <div class="navbar">
-  <button class="navbtn secondary" id="prevBtn">← Previous</button>
-  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-  <button class="navbtn" id="nextBtn">Next →</button>
+  <div class="bar-inner">
+    <button class="navbtn secondary" id="prevBtn">← Previous</button>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="navbtn" id="nextBtn">Next →</button>
+  </div>
 </div>
 
 <script>
