@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 — Topic 1: Programming Languages and Paradigms</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="bar-inner">
+    <div class="brand">IS 214 · <strong>Topic 1</strong></div>
+    <div class="triad-strip"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+    <div class="counter"><span id="curNum">1</span> / <span id="totalNum">16</span></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section class="slide active" id="slide-0">
+<div class="hero-inline">
+  <div class="eyebrow">IS 214 · TOPIC 1 · STUDY GUIDE</div>
+  <h1>Programming Languages and Paradigms</h1>
+  <div class="triad">
+    <div class="triad-node syn"><h4>SYNTAX</h4><p>what is valid</p></div>
+    <div class="triad-node sem"><h4>SEMANTICS</h4><p>what it means</p></div>
+    <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
+  </div>
+</div>
+<p>Programming languages provide formal ways of expressing computation. They differ in how they represent data, express computation, structure programs, and translate programs into executable behavior.</p>
+<p>This lesson introduces the fundamental concepts we will use throughout IS 214: programming-language paradigms, language classification, language evaluation, compilation and interpretation, and the basic stages through which programs are analyzed and executed.</p>
+<h3 style="font-size:18px; margin:32px 0 14px;">By the end of this lesson, you should be able to</h3>
+<ul>
+  <li>explain what a programming language is;</li>
+  <li>distinguish syntax from semantics;</li>
+  <li>explain why programming languages differ;</li>
+  <li>distinguish major programming paradigms;</li>
+  <li>classify programming languages using different criteria;</li>
+  <li>explain basic differences between compilation and interpretation;</li>
+  <li>describe the major stages of program translation; and</li>
+  <li>identify lexical, syntax, and semantic errors.</li>
+</ul>
+<p style="font-size:14px; color:var(--ink-soft); margin-top:24px;"><strong>Estimated study time:</strong> 60–90 minutes.</p>
+</section>
+
+<section class="slide" id="slide-1">
+<div class="page-label">Page 1</div>
+<h2>What Is a Programming Language?</h2>
+<p>A programming language provides a <strong>formal way to describe computation</strong>. It defines what can be written, how those elements can be combined, and what those constructions mean when executed.</p>
+<div class="diagram">
+  <div class="flow-box">PROGRAMMING LANGUAGE</div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-row">
+    <div style="text-align:center;">
+      <div class="flow-box" style="border-color:var(--syntax); color:var(--syntax);">SYNTAX</div>
+      <p style="font-size:13px; color:var(--ink-soft); margin-top:8px;">What is valid</p>
+    </div>
+    <div style="text-align:center;">
+      <div class="flow-box" style="border-color:var(--semantics); color:var(--semantics);">SEMANTICS</div>
+      <p style="font-size:13px; color:var(--ink-soft); margin-top:8px;">What it means</p>
+    </div>
+    <div style="text-align:center;">
+      <div class="flow-box" style="border-color:var(--execution); color:var(--execution);">EXECUTION</div>
+      <p style="font-size:13px; color:var(--ink-soft); margin-top:8px;">What happens</p>
+    </div>
+  </div>
+</div>
+<p><strong>Syntax</strong> determines what constitutes a valid program. <strong>Semantics</strong> describes what valid programs mean. <strong>Execution</strong> is one way in which that meaning is realized — not a third, equal ingredient alongside syntax and semantics, but a consequence of them. That distinction will matter later when we discuss interpreters.</p>
+
+<h3 style="font-size:17px; margin:28px 0 10px;">A worked example</h3>
+<pre><code>total = price * quantity</code></pre>
+<table>
+  <tr><th style="color:var(--syntax);">Syntax</th><td>The statement follows Python's syntactic rules. It contains an identifier (<code>total</code>), an assignment operator (<code>=</code>), and an expression (<code>price * quantity</code>).</td></tr>
+  <tr><th style="color:var(--semantics);">Semantics</th><td>The statement means: evaluate <code>price * quantity</code> and bind the resulting value to <code>total</code>.</td></tr>
+  <tr><th style="color:var(--execution);">Execution</th><td>When Python executes the statement, the expression is evaluated and the resulting value becomes associated with <code>total</code>.</td></tr>
+</table>
+
+<div class="diagram">
+  <div class="flow">
+    <div class="flow-box" style="border-color:var(--syntax); color:var(--syntax);">SYNTAX</div>
+    <p style="font-size:13.5px; color:var(--ink-soft); margin:6px 0 0;">Is the program structurally valid?</p>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box" style="border-color:var(--semantics); color:var(--semantics);">SEMANTICS</div>
+    <p style="font-size:13.5px; color:var(--ink-soft); margin:6px 0 0;">What does the valid program mean?</p>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box" style="border-color:var(--execution); color:var(--execution);">EXECUTION</div>
+    <p style="font-size:13.5px; color:var(--ink-soft); margin:6px 0 0;">What happens when that meaning is carried out?</p>
+  </div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">Keep this chain in mind — we'll come back to it throughout the course.</p>
+</section>
+
+<section class="slide" id="slide-2">
+<div class="page-label">Page 2</div>
+<h2>One Computation, Many Languages</h2>
+<p>Here's the same computation — print "Hello, World!" — written four different ways.</p>
+<div class="lang-grid">
+  <div class="lang-card"><h4>Assembly</h4><p>Low-level, explicit interaction with machine-oriented operations.</p><pre><code>mov ah, 9
+mov dx, offset msg
+int 21h</code></pre></div>
+  <div class="lang-card"><h4>Java</h4><p>Object-oriented and strongly structured.</p><pre><code>public class Hello {
+  public static void main(String[] a) {
+    System.out.println("Hello, World!");
+  }
+}</code></pre></div>
+  <div class="lang-card"><h4>Scheme</h4><p>Functional style.</p><pre><code>(define (hello)
+  (display "Hello, World!"))</code></pre></div>
+  <div class="lang-card"><h4>Python</h4><p>Compact, high-level syntax.</p><pre><code>print("Hello, World!")</code></pre></div>
+</div>
+<p>The computation is essentially the same, but the way it is expressed differs. These differences are not accidental. Programming languages make different choices about syntax, abstraction, computation models, and program organization.</p>
+
+<div class="check open">
+  <div class="qlabel">Think about it</div>
+  <div class="qtext">What does this tell us about programming languages?</div>
+  <button class="reveal-btn">Reveal explanation</button>
+  <div class="reveal-content">No single language is the "natural" way to express a computation — each one embodies a different set of design decisions about what to make explicit, what to abstract away, and what model of computation to build around. Understanding a language means understanding those decisions, not just memorizing its syntax.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-3">
+<div class="page-label">Page 3</div>
+<h2>Why Are There So Many Programming Languages?</h2>
+<p>There is no single programming language that is ideal for every problem. Language design is shaped by competing goals:</p>
+<ul>
+  <li>readability</li>
+  <li>writability</li>
+  <li>reliability</li>
+  <li>performance</li>
+  <li>abstraction</li>
+  <li>safety</li>
+  <li>programmer productivity</li>
+  <li>application domain</li>
+</ul>
+<div class="callout">Programming-language design involves trade-offs.</div>
+<p>For example: a language may provide more control over memory and hardware for performance, but this may make programs more difficult to write safely. Another language may provide more abstraction and automatic memory management, making development easier while giving the programmer less direct control.</p>
+
+<div class="check open">
+  <div class="qlabel">Think about it</div>
+  <div class="qtext">Why might a language designer deliberately give programmers less control?</div>
+  <button class="reveal-btn">Reveal explanation</button>
+  <div class="reveal-content">Less direct control usually means fewer opportunities to make certain classes of mistakes — a language that manages memory automatically, for instance, removes an entire category of bugs (dangling pointers, memory leaks) that a lower-level language leaves entirely up to the programmer. The designer is trading raw control for safety and productivity, on the bet that most programmers benefit more from that trade than they lose.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-4">
+<div class="page-label">Page 4</div>
+<h2>What Is a Programming Paradigm?</h2>
+<p>A programming paradigm is a way of organizing and expressing computation. It influences how programmers think about a problem and how they structure their programs — not just the syntax they type.</p>
+<p>Paradigms are usually grouped into a few broad families:</p>
+<ul>
+  <li><strong>Imperative</strong> — describe a sequence of steps that change program state</li>
+  <li><strong>Object-oriented</strong> — organize programs around objects that bundle state and behavior</li>
+  <li><strong>Functional</strong> — express computation primarily through functions and minimize reliance on changing program state</li>
+  <li><strong>Logic</strong> — express facts and rules, and let the language derive conclusions</li>
+  <li><strong>Declarative</strong> — describe what result is wanted, rather than the steps to get there</li>
+</ul>
+<p>These are not mutually exclusive — a single language, including Python, can support several of them. The next two pages look closely at the two broadest categories: <strong>imperative</strong> and <strong>declarative</strong>.</p>
+</section>
+
+<section class="slide" id="slide-5">
+<div class="page-label">Page 5</div>
+<h2>Imperative Programming</h2>
+<p>Imperative programming emphasizes <strong>how</strong> a computation is performed — a program describes a sequence of actions that changes program state.</p>
+<pre><code>total = 0
+for x in numbers:
+    total = total + x</code></pre>
+<p>Tracing it conceptually, step by step:</p>
+<div class="diagram" style="text-align:left;">
+  <div class="tree">
+    total = 0<br>
+    x = first value&nbsp;&nbsp;→&nbsp;&nbsp;total changes<br>
+    x = second value&nbsp;&nbsp;→&nbsp;&nbsp;total changes<br>
+    x = third value&nbsp;&nbsp;→&nbsp;&nbsp;total changes<br>
+    …
+  </div>
+</div>
+<p>The program explicitly describes a sequence of operations and changes to program state. This is characteristic of imperative programming — the code is a trace of <em>how</em> the answer gets built up.</p>
+
+<div class="check" data-answer="2">
+  <div class="qlabel">Check your understanding</div>
+  <div class="qtext">Which programming style is most evident in the code above?</div>
+  <div class="opt-row"><button class="opt">Logic</button><div class="opt-fb">Logic programming expresses facts and rules and lets the language derive conclusions — nothing here does that; every step is spelled out directly.</div></div>
+  <div class="opt-row"><button class="opt">Functional</button><div class="opt-fb">Functional style avoids changing state and expresses computation as function evaluation — but this code repeatedly reassigns <code>total</code>, which is exactly the state-changing pattern functional style avoids.</div></div>
+  <div class="opt-row"><button class="opt">Imperative</button><div class="opt-fb">Correct. The code is an explicit sequence of steps that changes <code>total</code>'s state on each iteration — the defining trait of imperative programming.</div></div>
+  <div class="opt-row"><button class="opt">Declarative</button><div class="opt-fb">Declarative code describes the result you want, not the steps to get there. This code does the opposite — it spells out every step.</div></div>
+  <div class="fb"></div>
+</div>
+</section>
+
+<section class="slide" id="slide-6">
+<div class="page-label">Page 6</div>
+<h2>Declarative Programming</h2>
+<p>Declarative programming emphasizes <strong>what</strong> result or relationship is wanted, rather than specifying every step. For example, SQL:</p>
+<pre><code>SELECT name
+FROM students
+WHERE grade >= 1.5;</code></pre>
+<p>We don't tell the database to scan this disk block, then compare this row, then move to the next row. We describe <strong>what data we want</strong>, and the database figures out how to get it.</p>
+<table>
+  <tr><th>Imperative</th><td>"What steps should be performed?"</td></tr>
+  <tr><th>Declarative</th><td>"What result do I want?"</td></tr>
+</table>
+<p style="font-size:14px; color:var(--ink-soft);">This is a useful distinction, not an absolute rule — plenty of real code mixes both styles, sometimes in the same function.</p>
+</section>
+
+<section class="slide" id="slide-7">
+<div class="page-label">Page 7</div>
+<h2>Python as a Multi-Paradigm Language</h2>
+<p>Consider two ways of summing a list in Python:</p>
+<pre><code>total = 0
+for x in numbers:
+    total += x</code></pre>
+<p>versus:</p>
+<pre><code>total = sum(numbers)</code></pre>
+<p>Both are Python programs, and both compute the sum. The first explicitly describes the iteration and state updates. The second uses a <strong>higher-level abstraction</strong>: the iteration is still happening, but <code>sum()</code> handles it internally rather than asking you to write it out.</p>
+<div class="callout">Abstraction allows programmers to express computations without specifying every implementation detail.</div>
+<p style="font-size:14px; color:var(--ink-soft);">It's tempting to call the second version "declarative" — but that's not quite right either. It's still telling Python what to do; it's just doing so at a higher level. Abstraction and paradigm are related ideas, but they're not the same thing.</p>
+<div class="diagram">
+  <div class="flow-row">
+    <div style="text-align:center;">
+      <div class="flow-box process">Explicit mechanism</div>
+      <p style="font-size:13px; color:var(--ink-soft); margin-top:8px;">iterate → accumulate → update</p>
+    </div>
+    <div style="text-align:center;">
+      <div class="flow-box process">Higher-level abstraction</div>
+      <p style="font-size:13px; color:var(--ink-soft); margin-top:8px;"><code style="background:none; color:inherit;">sum(numbers)</code></p>
+    </div>
+  </div>
+</div>
+
+<p>Now consider a third style:</p>
+<pre><code>top_students = list(
+    filter(lambda s: s["grade"] <= 1.5, students)
+)</code></pre>
+<p>This leans on functions as values — passing <code>lambda</code> into <code>filter</code> — which is closer to a functional style.</p>
+<div class="callout">A programming language can support multiple paradigms. A single program can also mix multiple paradigms.</div>
+</section>
+
+<section class="slide" id="slide-8">
+<div class="page-label">Page 8</div>
+<h2>Classifying Programming Languages</h2>
+<p>A language can be classified in several ways at the same time:</p>
+<table>
+  <tr><th>Dimension</th><th>Examples</th></tr>
+  <tr><td>Abstraction</td><td>Low-level / High-level</td></tr>
+  <tr><td>Paradigm</td><td>Imperative / Functional / Logic / Object-oriented</td></tr>
+  <tr><td>Purpose</td><td>General-purpose / Domain-specific</td></tr>
+  <tr><td>Application</td><td>Systems / Scientific / Business / AI</td></tr>
+  <tr><td>Implementation</td><td>Compiled / Interpreted / Hybrid</td></tr>
+</table>
+<p>Python is a high-level, general-purpose, multi-paradigm language. Its implementations also use multiple stages of translation and execution. We don't need to go deeply into Python's runtime yet — that's Topic 10.</p>
+
+<div class="check" data-answer="2">
+  <div class="qlabel">Check your understanding</div>
+  <div class="qtext">Which of the following is a classification by abstraction level?</div>
+  <div class="opt-row"><button class="opt">Functional vs. imperative</button><div class="opt-fb">That's a paradigm distinction — how computation is organized, not how close the language sits to the machine.</div></div>
+  <div class="opt-row"><button class="opt">General-purpose vs. domain-specific</button><div class="opt-fb">That's a purpose distinction — what kinds of problems the language targets, not its abstraction level.</div></div>
+  <div class="opt-row"><button class="opt">High-level vs. low-level</button><div class="opt-fb">Correct — this is literally what abstraction level measures: how much of the underlying machine the programmer has to manage directly.</div></div>
+  <div class="opt-row"><button class="opt">Compiled vs. interpreted</button><div class="opt-fb">That's an implementation distinction — how the language gets executed, which is a separate dimension from abstraction level.</div></div>
+  <div class="fb"></div>
+</div>
+</section>
+
+<section class="slide" id="slide-9">
+<div class="page-label">Page 9</div>
+<h2>Evaluating Programming Languages</h2>
+<ul>
+  <li><strong>Readability</strong> — how easily can humans understand programs written in the language?</li>
+  <li><strong>Writability</strong> — how easily can programmers express solutions?</li>
+  <li><strong>Reliability</strong> — how likely is the language to help programmers produce programs that behave correctly?</li>
+  <li><strong>Cost</strong> — what does it cost to learn, develop, execute, maintain, and support programs written in the language?</li>
+</ul>
+<p>Consider two languages that can both express the same algorithm. If one requires significantly more code but makes every operation explicit, it might offer greater control but lower writability. If another allows the same operation to be expressed in one concise statement, it may improve writability and readability — but potentially hide implementation details.</p>
+<div class="callout">There is no universally best language. Evaluation depends on the goals and context.</div>
+
+<div class="check open">
+  <div class="qlabel">Think about it</div>
+  <div class="qtext">Is the most writable language necessarily the best language?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">No. Giving programmers many different ways to express the same operation may make a language powerful — but also harder to learn, read, and maintain. Increasing writability can come at the cost of readability, which is exactly why "best" only makes sense relative to a goal, not as an absolute property of a language.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-10">
+<div class="page-label">Page 10</div>
+<h2>Compilation and Interpretation</h2>
+<p>Now we move from <strong>how languages are designed</strong> to <strong>how programs actually get executed.</strong></p>
+<h3 style="font-size:17px; margin:24px 0 8px;">Compilation</h3>
+<p>A compiler translates a program into another representation before execution.</p>
+<div class="diagram"><div class="flow">
+  <div class="flow-box">Source</div><div class="flow-arrow">↓</div>
+  <div class="flow-box process">Translation</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">Target representation</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">Execution</div>
+</div></div>
+<h3 style="font-size:17px; margin:24px 0 8px;">Interpretation</h3>
+<p>An interpreter executes a program by processing it during execution.</p>
+<div class="diagram"><div class="flow">
+  <div class="flow-box">Source / representation</div><div class="flow-arrow">↓</div>
+  <div class="flow-box process">Interpreter</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">Execution</div>
+</div></div>
+<p>The distinction between "compiled" and "interpreted" is useful for understanding basic implementation approaches, but real language implementations are often more complicated than either model on its own.</p>
+<p style="font-size:14px; color:var(--ink-soft);">We will later examine how Python's actual execution process combines several ideas introduced here — that's Topic 10.</p>
+</section>
+
+<section class="slide" id="slide-11">
+<div class="page-label">Page 11</div>
+<h2>From Source Code to Execution</h2>
+<div class="diagram">
+  <div class="pipeline">
+    <div class="artifact">SOURCE CODE</div>
+    <div class="arr">↓</div>
+    <div class="process p1">Lexical Analysis</div>
+    <div class="arr">↓</div>
+    <div class="artifact">TOKENS</div>
+    <div class="arr">↓</div>
+    <div class="process p2">Syntax Analysis</div>
+    <div class="arr">↓</div>
+    <div class="artifact">SYNTAX TREE</div>
+    <div class="arr">↓</div>
+    <div class="process p3">Semantic Analysis</div>
+    <div class="arr">↓</div>
+    <div class="artifact">SEMANTIC MODEL</div>
+    <div class="arr">↓</div>
+    <div class="process p4">Intermediate Representation</div>
+    <div class="arr">↓</div>
+    <div class="process p5">Optimization</div>
+    <div class="arr">↓</div>
+    <div class="process p6">Code Generation</div>
+    <div class="arr">↓</div>
+    <div class="artifact">TARGET CODE</div>
+  </div>
+</div>
+<p>We will study these stages in more detail later in the course. For now, focus on the fact that executing a program involves multiple forms of analysis and transformation — a program is not magically "run."</p>
+</section>
+
+<section class="slide" id="slide-12">
+<div class="page-label">Page 12</div>
+<h2>Following One Statement Through the Pipeline</h2>
+<pre><code>result = oldsum - value / 100</code></pre>
+
+<h3 style="font-size:15.5px; margin:22px 0 8px; color:var(--syntax);">Characters → Tokens</h3>
+<div class="token-row">
+  <span class="token">IDENTIFIER</span><span class="token">ASSIGN</span><span class="token">IDENTIFIER</span><span class="token">MINUS</span><span class="token">IDENTIFIER</span><span class="token">DIVIDE</span><span class="token">INTEGER</span>
+</div>
+
+<h3 style="font-size:15.5px; margin:22px 0 8px; color:var(--syntax);">Tokens → Structure</h3>
+<div class="diagram" style="text-align:left;">
+  <div class="tree">
+    <span class="t1">=</span><br>
+    ├── result<br>
+    └── <span class="t2">-</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── oldsum<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└── <span class="t2">/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── value<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 100
+  </div>
+</div>
+
+<table>
+  <tr><th style="color:var(--syntax);">Lexical analysis</th><td>What are the pieces?</td></tr>
+  <tr><th style="color:var(--syntax);">Syntax analysis</th><td>How are the pieces structured?</td></tr>
+  <tr><th style="color:var(--semantics);">Semantic analysis</th><td>Does the structure make sense according to the language's rules?</td></tr>
+</table>
+<p style="font-size:14px; color:var(--ink-soft);">This is the perfect bridge into Topic 2, where we start building each of these pieces ourselves.</p>
+</section>
+
+<section class="slide" id="slide-13">
+<div class="page-label">Page 13</div>
+<h2>Errors Have a Location</h2>
+<table>
+  <tr><th style="color:var(--syntax);">Lexical</th><td>The input cannot be divided into valid tokens.</td></tr>
+  <tr><th style="color:var(--syntax);">Syntax</th><td>The tokens do not form a valid program structure.</td></tr>
+  <tr><th style="color:var(--semantics);">Semantic</th><td>The structure is valid, but the program violates a rule about meaning or execution.</td></tr>
+</table>
+<p>Try classifying each example before checking the answer.</p>
+
+<div class="check" data-answer="0">
+  <div class="qlabel">Example 1</div>
+  <div class="qtext"><code>x = 10 @ 5</code> — in a language where <code>@</code> is not a valid operator, what kind of problem is this?</div>
+  <div class="opt-row"><button class="opt">Lexical error</button><div class="opt-fb">Correct. <code>@</code> can't even be turned into a valid token in this language — the problem happens before structure or meaning are ever considered.</div></div>
+  <div class="opt-row"><button class="opt">Syntax error</button><div class="opt-fb">Not quite — a syntax error means the tokens exist but are arranged incorrectly. Here, <code>@</code> can't become a valid token at all, which is a step earlier.</div></div>
+  <div class="opt-row"><button class="opt">Semantic error</button><div class="opt-fb">Not quite — semantic errors happen when valid structure has invalid meaning. This never gets that far, since <code>@</code> isn't a valid token in the first place.</div></div>
+  <div class="fb"></div>
+</div>
+
+<div class="check" data-answer="1">
+  <div class="qlabel">Example 2</div>
+  <div class="qtext"><code>if x &gt; 10<br>print(x)</code> — what kind of problem is this?</div>
+  <div class="opt-row"><button class="opt">Lexical error</button><div class="opt-fb">Not quite — every character here forms a valid token (<code>if</code>, <code>x</code>, <code>&gt;</code>, <code>10</code>, <code>print</code>, and so on). The tokens themselves aren't the problem.</div></div>
+  <div class="opt-row"><button class="opt">Syntax error</button><div class="opt-fb">Correct. The tokens are all valid, but they're not arranged the way the grammar requires — this language expects a colon and an indented block after <code>if x &gt; 10</code>.</div></div>
+  <div class="opt-row"><button class="opt">Semantic error</button><div class="opt-fb">Not quite — semantic errors assume the structure is already valid. This example's structure itself is the problem.</div></div>
+  <div class="fb"></div>
+</div>
+
+<div class="check" data-answer="2">
+  <div class="qlabel">Example 3</div>
+  <div class="qtext"><code>x = "hello"<br>y = x + 5</code> — what kind of problem is this?</div>
+  <div class="opt-row"><button class="opt">Lexical error</button><div class="opt-fb">Not quite — every token here is valid: identifiers, an assignment operator, a string literal, a plus operator, a number.</div></div>
+  <div class="opt-row"><button class="opt">Syntax error</button><div class="opt-fb">Not quite — <code>x + 5</code> is a perfectly valid expression structurally. Addition of two things is allowed by the grammar.</div></div>
+  <div class="opt-row"><button class="opt">Semantic / runtime error</button><div class="opt-fb">Correct. The structure is fine — the grammar has no problem with "expression + expression." The issue is meaning: adding a string to a number isn't a valid operation. In Python specifically, there's no separate static analysis pass that catches this ahead of time — the incompatibility is only detected when the statement actually executes, as a <code>TypeError</code>.</div></div>
+  <div class="fb"></div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">That last example points at something worth remembering: <strong>different languages detect different classes of errors at different stages.</strong> Some catch a mismatch like this before the program ever runs; others, like Python, only discover it during execution. We'll see this distinction matter again later in the course.</p>
+</section>
+
+<section class="slide" id="slide-14">
+<div class="page-label">Page 14</div>
+<h2>Check Your Understanding</h2>
+<p style="font-size:14px; color:var(--ink-soft);">Five questions covering this lesson. Not graded — just for you to check where things stand before moving on.</p>
+
+<div class="check open">
+  <div class="qlabel">1</div>
+  <div class="qtext">What is the difference between syntax and semantics?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Syntax is about structure — whether a program is put together according to the language's rules. Semantics is about meaning — what a structurally valid program actually does. A program can be syntactically perfect and still be semantically wrong.</div>
+</div>
+
+<div class="check" data-answer="0" style="margin-top:20px;">
+  <div class="qlabel">2</div>
+  <div class="qtext">Which programming paradigm emphasizes explicit state changes?</div>
+  <div class="opt-row"><button class="opt">Imperative</button><div class="opt-fb">Correct — imperative programming describes computation as a sequence of steps that change program state, exactly like the <code>total += x</code> loop from Page 5.</div></div>
+  <div class="opt-row"><button class="opt">Functional</button><div class="opt-fb">Functional style tends to avoid changing state, expressing computation as function evaluation instead.</div></div>
+  <div class="opt-row"><button class="opt">Logic</button><div class="opt-fb">Logic programming expresses facts and rules and derives conclusions from them — not a sequence of state changes.</div></div>
+  <div class="opt-row"><button class="opt">Declarative</button><div class="opt-fb">Declarative style describes the desired result, not the steps — the opposite instinct from explicit state changes.</div></div>
+  <div class="fb"></div>
+</div>
+
+<div class="check" data-answer="0" style="margin-top:20px;">
+  <div class="qlabel">3</div>
+  <div class="qtext">Can a language belong to more than one paradigm?</div>
+  <div class="opt-row"><button class="opt">Yes</button><div class="opt-fb">Correct — Python itself is the running example: it supports imperative loops, functional idioms like <code>filter</code>/<code>lambda</code>, and object-oriented code, often in the same program.</div></div>
+  <div class="opt-row"><button class="opt">No</button><div class="opt-fb">Not quite — Page 7 showed the same language, Python, expressing the same computation in imperative and functional styles. Languages aren't locked into one paradigm.</div></div>
+  <div class="fb"></div>
+</div>
+
+<div class="check open" style="margin-top:20px;">
+  <div class="qlabel">4</div>
+  <div class="qtext">What is the difference between compilation and interpretation?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Compilation translates a program into another representation (like machine code) before it runs. Interpretation processes and executes the program directly, without a separate translation step first. Many real systems, including Python, combine ideas from both rather than being purely one or the other.</div>
+</div>
+
+<div class="check open" style="margin-top:20px;">
+  <div class="qlabel">5</div>
+  <div class="qtext">What distinguishes a lexical error from a syntax error?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">A lexical error means the characters themselves can't be turned into valid tokens (an unrecognized symbol, for instance). A syntax error means the tokens are all individually valid, but they're arranged in a way the grammar doesn't allow. Lexical analysis happens first, so a lexical error stops things before syntax is even checked.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-15">
+<div class="page-label">Summary</div>
+<h2>The Big Picture</h2>
+<p>A programming language provides a formal way to express computation. Different languages make different choices about how computation is represented, structured, and executed.</p>
+<p>To understand a programming language, we need to consider:</p>
+<ul>
+  <li><strong>Syntax</strong> — what programs look like</li>
+  <li><strong>Semantics</strong> — what programs mean</li>
+  <li><strong>Paradigms</strong> — how computation is organized</li>
+  <li><strong>Implementation</strong> — how programs are translated and executed</li>
+</ul>
+<p>These ideas provide the foundation for the rest of IS 214.</p>
+<div class="callout">In the next topics, we will start looking inside these mechanisms.</div>
+</section>
+
+<div class="end-note" id="endNote" style="display:none; text-align:center; padding:40px 24px; color:var(--ink-soft);">
+  <h3 style="font-size:22px; margin-bottom:10px;">End of Topic 1</h3>
+  <p>Use Previous to review any page.</p>
+</div>
+
+</div>
+
+<div class="navbar">
+  <div class="bar-inner">
+    <button class="navbtn secondary" id="prevBtn">← Previous</button>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="navbtn" id="nextBtn">Next →</button>
+  </div>
+</div>
+
+<script src="../assets/lesson.js"></script>
+</body>
+</html>

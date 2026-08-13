@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 — Topic N: TOPIC TITLE HERE</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="bar-inner">
+    <div class="brand">IS 214 · <strong>Topic N</strong></div>
+    <div class="triad-strip"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+    <div class="counter"><span id="curNum">1</span> / <span id="totalNum"></span></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section class="slide active" id="slide-0">
+  <!-- Intro slide: hero + objectives. Copy the pattern from lessons/topic1.html -->
+  <div class="hero-inline">
+    <div class="eyebrow">IS 214 · TOPIC N · STUDY GUIDE</div>
+    <h1>TOPIC TITLE HERE</h1>
+    <div class="triad">
+      <div class="triad-node syn"><h4>SYNTAX</h4><p>what is valid</p></div>
+      <div class="triad-node sem"><h4>SEMANTICS</h4><p>what it means</p></div>
+      <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
+    </div>
+  </div>
+  <p class="lede">One or two sentences framing the topic.</p>
+  <h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
+  <ol>
+    <li>Objective 1</li>
+  </ol>
+</section>
+
+<section class="slide" id="slide-1">
+  <div class="page-label">Page 1</div>
+  <h2>Page title</h2>
+  <p>Content…</p>
+  <!--
+  Reusable components (see lessons/topic1.html for real examples):
+  - Diagram flow:      <div class="diagram"><div class="flow">...</div></div>
+  - Pipeline diagram:  <div class="diagram"><div class="pipeline">...</div></div>
+  - Code block:        <pre><code>...</code></pre>
+  - Callout:           <div class="callout">...</div>
+  - MCQ check:         <div class="check" data-answer="N"><div class="qlabel">Check</div>
+                          <div class="qtext">...</div>
+                          <button class="opt">...</button> (repeat)
+                          <div class="fb"></div></div>
+  - Reveal/open check: <div class="check open"><div class="qlabel">...</div><div class="qtext">...</div>
+                          <button class="reveal-btn">Reveal answer</button>
+                          <div class="reveal-content">...</div></div>
+  -->
+</section>
+
+<!-- Add more <section class="slide" id="slide-N"> blocks here, one per page -->
+
+</div>
+
+<div class="navbar">
+  <div class="bar-inner">
+    <button class="navbtn secondary" id="prevBtn">← Previous</button>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="navbtn" id="nextBtn">Next →</button>
+  </div>
+</div>
+
+<script src="../assets/lesson.js"></script>
+</body>
+</html>
