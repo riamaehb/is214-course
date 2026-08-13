@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 — Topic 4: Semantics, Expressions & Evaluation</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="bar-inner">
+    <div class="brand">IS 214 · <strong>Topic 4</strong></div>
+    <div class="triad-strip"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+    <div class="counter"><span id="curNum">1</span> / <span id="totalNum">22</span></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section class="slide active" id="slide-0">
+<div class="hero-inline">
+  <div class="eyebrow">IS 214 · TOPIC 4 · STUDY GUIDE</div>
+  <h1>Semantics, Expressions &amp; Evaluation</h1>
+  <div class="triad">
+    <div class="triad-node syn"><h4>SYNTAX</h4><p>what is valid</p></div>
+    <div class="triad-node sem"><h4>SEMANTICS</h4><p>what it means</p></div>
+    <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
+  </div>
+</div>
+<p><strong>We have an AST. What does it mean, and how is its meaning evaluated?</strong></p>
+<p>Topic 3 ended with program structure. This topic gives that structure meaning — and asks a question that turns out to be more subtle than it first looks: once you know <em>what</em> an expression computes, you still have to ask <em>when</em> and <em>how</em> it gets computed.</p>
+<h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
+<ul>
+  <li>explain the distinction between syntax and semantics;</li>
+  <li>explain what an expression is and how expressions are evaluated;</li>
+  <li>trace the evaluation of an expression represented as an AST;</li>
+  <li>describe operational, denotational, and axiomatic approaches to semantics;</li>
+  <li>explain why evaluation order matters, and identify side effects;</li>
+  <li>explain referential transparency;</li>
+  <li>distinguish eager and lazy evaluation, including Python's short-circuit evaluation; and</li>
+  <li>implement a simple evaluator for a small AST.</li>
+</ul>
+<p style="font-size:14px; color:var(--ink-soft); margin-top:24px;"><strong>Estimated study time:</strong> 75–100 minutes, including the hands-on activities.</p>
+</section>
+
+<section class="slide" id="slide-1">
+<div class="page-label">Page 1</div>
+<h2>From Structure to Meaning</h2>
+<p>Topic 3 ended with an AST like this one, for <code>x = a + b * c</code>:</p>
+<div class="diagram" style="text-align:left;">
+  <div class="tree">
+    Assignment<br>
+    ├── x<br>
+    └── Add<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── a<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└── Multiply<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── b<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── c
+  </div>
+</div>
+<p>Suppose <code>a = 2</code>, <code>b = 3</code>, <code>c = 4</code>. We know the structure is valid — Topic 3 guarantees that. But what does the program actually <em>do</em>?</p>
+<pre><code>b × c → 12
+a + 12 → 14</code></pre>
+<p>The result, <code>14</code>, gets assigned to <code>x</code>.</p>
+<div class="callout">Parsing gives a program structure. Semantics gives that structure meaning. Evaluation is one way of carrying out that meaning.</div>
+</section>
+
+<section class="slide" id="slide-2">
+<div class="page-label">Page 2</div>
+<h2>Syntax vs. Semantics</h2>
+<pre><code>x = 2 + 3</code></pre>
+<table>
+  <tr><th style="color:var(--syntax);">Syntax</th><td>The statement follows the language's rules for forming an assignment and an expression.</td></tr>
+  <tr><th style="color:var(--semantics);">Semantics</th><td>Its meaning: evaluate <code>2 + 3</code>, obtain <code>5</code>, assign the result to <code>x</code>.</td></tr>
+</table>
+<div class="callout">Syntax: "What structures are valid?" Semantics: "What do valid structures mean?"</div>
+
+<div class="check open">
+  <div class="qlabel">Think about it</div>
+  <div class="qtext">Consider <code>10 / 0</code>. Is this syntactically valid? What's different about this problem compared to a syntax error?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">The expression has a perfectly valid syntactic structure — division of one number by another is completely legal grammatically. The problem only arises when the expression is <em>evaluated</em>. That's the whole distinction this topic is about: being valid and being meaningful (or even executable) are two different questions.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-3">
+<div class="page-label">Page 3</div>
+<h2>What Is an Expression?</h2>
+<p>An <strong>expression</strong> is a construct that can be evaluated to produce a value.</p>
+<div class="token-row">
+  <span class="token">42</span><span class="token">x</span><span class="token">2 + 3</span><span class="token">x * y</span><span class="token">f(x)</span><span class="token">x &gt; 10</span>
+</div>
+<div class="diagram"><div class="flow">
+  <div class="flow-box">Expression</div><div class="flow-arrow">↓</div>
+  <div class="flow-box process">Evaluation</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">Value</div>
+</div></div>
+<p>Expressions, then, can be thought of as <strong>computations that produce values</strong> — which raises the obvious next question: how, exactly?</p>
+</section>
+
+<section class="slide" id="slide-4">
+<div class="page-label">Page 4</div>
+<h2>Try It: Predict the Value</h2>
+<p>Before running these in Python, predict their results:</p>
+<pre><code>2 + 3 * 4
+(2 + 3) * 4
+10 > 3
+"hello" + " world"</code></pre>
+<p style="font-size:14px; color:var(--ink-soft);">Then actually run them in a Python shell and compare.</p>
+
+<div class="check open">
+  <div class="qlabel">Think about it</div>
+  <div class="qtext">Why did the first two expressions produce different results?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Because they're different ASTs. <code>2 + 3 * 4</code> parses as <code>2 + (3 * 4)</code> — multiplication nested inside — while the parentheses in the second expression force <code>(2 + 3) * 4</code> instead. Evaluation operates on whatever structure syntax and parsing already established; it doesn't get to reinterpret that structure. This is Topic 3's precedence discussion, now paying off directly.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-5">
+<div class="page-label">Page 5</div>
+<h2>Evaluating an AST</h2>
+<div class="diagram" style="text-align:left;">
+  <div class="tree">
+    Add<br>
+    ├── 2<br>
+    └── Mult<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── 3<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└── 4
+  </div>
+</div>
+<p>How should an evaluator process this tree?</p>
+<table>
+  <tr><td>Step 1</td><td>Evaluate the left child: <code>2 → 2</code></td></tr>
+  <tr><td>Step 2</td><td>Evaluate the right child: <code>Mult(3, 4)</code>, which requires <code>3 × 4 → 12</code></td></tr>
+  <tr><td>Step 3</td><td>Evaluate the addition: <code>2 + 12 → 14</code></td></tr>
+</table>
+<p>Therefore: <code>Add(2, Mult(3, 4)) → 14</code>.</p>
+<div class="callout">An evaluator recursively evaluates the parts of an AST and combines their results according to the semantics of each operation.</div>
+</section>
+
+<section class="slide" id="slide-6">
+<div class="page-label">Page 6</div>
+<h2>Think: Trace the AST</h2>
+<p>Determine the value of each tree <em>without running Python</em> — trace from the leaves upward. The goal isn't arithmetic speed; it's practicing how an evaluator thinks.</p>
+
+<div class="check" data-answer="1">
+  <div class="qlabel">Example 1</div>
+  <div class="qtext">Add ├─ 5, └─ 3</div>
+  <div class="opt-row"><button class="opt">7</button><div class="opt-fb">Not quite — check the addition again: 5 + 3.</div></div>
+  <div class="opt-row"><button class="opt">8</button><div class="opt-fb">Correct — 5 + 3 = 8.</div></div>
+  <div class="opt-row"><button class="opt">15</button><div class="opt-fb">Not quite — this tree is Add, not Multiply.</div></div>
+  <div class="fb"></div>
+</div>
+
+<div class="check" data-answer="0" style="margin-top:20px;">
+  <div class="qlabel">Example 2</div>
+  <div class="qtext">Subtract ├─ Multiply(5, 2), └─ 3</div>
+  <div class="opt-row"><button class="opt">7</button><div class="opt-fb">Correct — Multiply(5, 2) → 10 first, then Subtract(10, 3) → 7.</div></div>
+  <div class="opt-row"><button class="opt">13</button><div class="opt-fb">Not quite — that would be if you added instead of subtracted at the last step. Multiply(5, 2) → 10, then 10 − 3.</div></div>
+  <div class="opt-row"><button class="opt">9</button><div class="opt-fb">Not quite — re-check the multiplication: 5 × 2, not 5 + 2.</div></div>
+  <div class="fb"></div>
+</div>
+
+<div class="check" data-answer="2" style="margin-top:20px;">
+  <div class="qlabel">Example 3</div>
+  <div class="qtext">Divide ├─ Add(10, 2), └─ 3</div>
+  <div class="opt-row"><button class="opt">3.67</button><div class="opt-fb">Not quite — that's 10 ÷ (2 + 3), grouping the wrong pair. Add(10, 2) is the left child of Divide.</div></div>
+  <div class="opt-row"><button class="opt">1</button><div class="opt-fb">Not quite — check the addition first: Add(10, 2) → 12, then 12 ÷ 3.</div></div>
+  <div class="opt-row"><button class="opt">4</button><div class="opt-fb">Correct — Add(10, 2) → 12 first, then Divide(12, 3) → 4.</div></div>
+  <div class="fb"></div>
+</div>
+
+<div class="check" data-answer="1" style="margin-top:20px;">
+  <div class="qlabel">Example 4</div>
+  <div class="qtext">Multiply ├─ Add(2, 3), └─ Subtract(10, 4)</div>
+  <div class="opt-row"><button class="opt">11</button><div class="opt-fb">Not quite — both children need to be evaluated to a single number before the Multiply happens. Try evaluating Add(2,3) and Subtract(10,4) separately first.</div></div>
+  <div class="opt-row"><button class="opt">30</button><div class="opt-fb">Correct — Add(2, 3) → 5, Subtract(10, 4) → 6, then Multiply(5, 6) → 30.</div></div>
+  <div class="opt-row"><button class="opt">9</button><div class="opt-fb">Not quite — that's just Add(2,3) plus something. Both subtrees need full evaluation, then multiply the two results.</div></div>
+  <div class="fb"></div>
+</div>
+</section>
+
+<section class="slide" id="slide-7">
+<div class="page-label">Page 7</div>
+<h2>A Tiny Evaluator</h2>
+<p>The process you just performed by hand can be written as a program:</p>
+<pre><code>def evaluate(node):
+    if node.kind == "NUMBER":
+        return node.value
+    if node.kind == "ADD":
+        return evaluate(node.left) + evaluate(node.right)
+    if node.kind == "MULTIPLY":
+        return evaluate(node.left) * evaluate(node.right)</code></pre>
+<p>For <code>Add(Number(2), Multiply(Number(3), Number(4)))</code>, the evaluator recursively evaluates the children and returns <code>14</code> — the same trace you just did on paper.</p>
+<div class="callout">The evaluator does not need to rediscover the syntax. The parser has already produced the structure. The evaluator gives that structure meaning.</div>
+</section>
+
+<section class="slide" id="slide-8">
+<div class="page-label">Page 8</div>
+<h2>Build: Complete a Tiny Evaluator</h2>
+<p>Implement the missing cases yourself, in your own Python environment:</p>
+<pre><code>def evaluate(node):
+    if node.kind == "NUMBER":
+        return node.value
+    if node.kind == "ADD":
+        return evaluate(node.left) + evaluate(node.right)
+    if node.kind == "SUBTRACT":
+        # TODO
+    if node.kind == "MULTIPLY":
+        return evaluate(node.left) * evaluate(node.right)
+    if node.kind == "DIVIDE":
+        # TODO</code></pre>
+<p>Test it against: <code>Add(2, 3)</code> should produce <code>5</code>; <code>Divide(Add(10, 2), 3)</code> should produce <code>4</code>.</p>
+<div class="check open">
+  <div class="qlabel">Once you've tried it</div>
+  <div class="qtext">Compare your SUBTRACT and DIVIDE cases against a reference solution.</div>
+  <button class="reveal-btn">Reveal solution</button>
+  <div class="reveal-content"><pre style="margin:0;"><code>    if node.kind == "SUBTRACT":
+        return evaluate(node.left) - evaluate(node.right)
+    if node.kind == "DIVIDE":
+        return evaluate(node.left) / evaluate(node.right)</code></pre></div>
+</div>
+<div class="diagram" style="margin-top:24px;">
+  <div class="flow">
+    <div class="flow-box">AST node</div><div class="flow-arrow">↓</div>
+    <div class="flow-box">identify the operation</div><div class="flow-arrow">↓</div>
+    <div class="flow-box">evaluate its children</div><div class="flow-arrow">↓</div>
+    <div class="flow-box">apply the operation</div><div class="flow-arrow">↓</div>
+    <div class="flow-box">return the result</div>
+  </div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">This tiny program is deliberately simple — its purpose is to make the mechanism of evaluation concrete before you build a real one.</p>
+</section>
+
+<section class="slide" id="slide-9">
+<div class="page-label">Page 9</div>
+<h2>Operational Semantics</h2>
+<p><strong>Operational semantics</strong> describes the meaning of a construct in terms of the steps used to execute it.</p>
+<pre><code>x = 2
+y = x + 3</code></pre>
+<table>
+  <tr><td>1</td><td>Evaluate <code>2</code> → 2</td></tr>
+  <tr><td>2</td><td>Assign 2 to <code>x</code></td></tr>
+  <tr><td>3</td><td>Evaluate <code>x + 3</code></td></tr>
+  <tr><td>4</td><td>Look up <code>x</code> → 2</td></tr>
+  <tr><td>5</td><td>Compute 2 + 3 → 5</td></tr>
+  <tr><td>6</td><td>Assign 5 to <code>y</code></td></tr>
+</table>
+<p>The focus is: <strong>what steps happen during execution?</strong> This is particularly useful for thinking about interpreters, because an interpreter must ultimately carry out exactly such steps — it's the style of semantics closest to what you'll actually build.</p>
+</section>
+
+<section class="slide" id="slide-10">
+<div class="page-label">Page 10</div>
+<h2>Denotational and Axiomatic Semantics</h2>
+<p>Operational semantics isn't the only way to describe meaning.</p>
+<h3 style="font-size:16px; margin:24px 0 8px;">Denotational semantics</h3>
+<p>Maps a construct to a mathematical object or value. For <code>2 + 3</code>, we might write its meaning as <code>⟦2 + 3⟧ = 5</code>. The focus: <strong>what does this construct denote?</strong></p>
+<h3 style="font-size:16px; margin:24px 0 8px;">Axiomatic semantics</h3>
+<p>Describes behavior using logical statements about program states:</p>
+<pre><code>{ x > 0 }
+x = x + 1
+{ x > 1 }</code></pre>
+<p>The statements before and after describe properties that hold about the program's state. The focus: <strong>what can we prove about the state before and after execution?</strong></p>
+</section>
+
+<section class="slide" id="slide-11">
+<div class="page-label">Page 11</div>
+<h2>Three Ways of Describing Meaning</h2>
+<table>
+  <tr><th>Approach</th><th>Main question</th></tr>
+  <tr><td>Operational</td><td>What steps does the program perform?</td></tr>
+  <tr><td>Denotational</td><td>What does the program mean mathematically?</td></tr>
+  <tr><td>Axiomatic</td><td>What properties can we establish about program states?</td></tr>
+</table>
+<p style="font-size:14px; color:var(--ink-soft);">You don't need to memorize the terminology without understanding the distinction. The important point is that semantics can be described from different perspectives.</p>
+
+<div class="check open">
+  <div class="qlabel">Think about it</div>
+  <div class="qtext">If we describe a program as a sequence of state changes during execution, which approach are we using?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Operational semantics — describing meaning as a sequence of execution steps is exactly what that approach is.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-12">
+<div class="page-label">Page 12</div>
+<h2>Evaluation Order</h2>
+<pre><code>f() + g()</code></pre>
+<p>This expression has a structure — but another question remains: <strong>when</strong> is <code>f()</code> evaluated, and when is <code>g()</code>?</p>
+<table>
+  <tr><th>Precedence</th><td>How an expression is <em>grouped</em> — e.g. <code>a + (b * c)</code>.</td></tr>
+  <tr><th>Evaluation order</th><td><em>When</em> the parts of an expression are evaluated.</td></tr>
+</table>
+<p>Related, but not the same thing.</p>
+
+<div class="qbox">
+  <div class="qlabel">Try it yourself</div>
+  <pre style="margin:12px 0;"><code>def f():
+    print("f")
+    return 1
+
+def g():
+    print("g")
+    return 2
+
+f() + g()</code></pre>
+  <p style="margin-bottom:0;"><strong>Before running it:</strong> predict what will be printed, and in what order. Then run it and check.</p>
+</div>
+<div class="callout">Evaluation order is part of a language's semantics.</div>
+</section>
+
+<section class="slide" id="slide-13">
+<div class="page-label">Page 13</div>
+<h2>Side Effects</h2>
+<p>An expression can do more than produce a value. A <strong>side effect</strong> is an observable change caused by evaluating an expression, beyond just producing its result — changing a variable, modifying an object, performing input/output, raising an exception.</p>
+<pre><code>x = 0
+def f():
+    global x
+    x += 1
+    return x</code></pre>
+<p>The call <code>f()</code> produces a value <strong>and</strong> changes <code>x</code>.</p>
+
+<div class="qbox">
+  <div class="qlabel">Try it yourself</div>
+  <p>Before running <code>f() + f()</code>, predict: what value does the expression produce, and what does <code>x</code> contain afterward? Then run it. Next, run <code>f()</code> then <code>f()</code> as two separate statements and compare.</p>
+</div>
+<div class="callout">An expression can have both a value and an effect. This is why side effects make evaluation order matter.</div>
+</section>
+
+<section class="slide" id="slide-14">
+<div class="page-label">Page 14</div>
+<h2>Why Side Effects Matter</h2>
+<p>Suppose two function calls both modify shared state:</p>
+<pre><code>f() + g()</code></pre>
+<p>If the calls happen in a different order, the final state can also be different — not just which value comes back, but what the program's state looks like afterward.</p>
+<div class="diagram"><div class="flow">
+  <div class="flow-box">Side effects</div>
+  <div class="flow-arrow">+</div>
+  <div class="flow-box">Evaluation order</div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box process">Observable program behavior</div>
+</div></div>
+<p style="font-size:14px; color:var(--ink-soft);">This is one reason understanding evaluation requires more than just knowing an expression's final value.</p>
+</section>
+
+<section class="slide" id="slide-15">
+<div class="page-label">Page 15</div>
+<h2>Referential Transparency</h2>
+<p>An expression is <strong>referentially transparent</strong> if it can be replaced by its value without changing the program's behavior.</p>
+<p><code>2 + 3</code> can be replaced by <code>5</code> without changing anything. But consider <code>f()</code> when <code>f()</code> changes program state — can we always replace <code>f()</code> with <code>5</code>, just because it happened to return 5 this time? Not necessarily: the call may have had a side effect that would be silently lost by the substitution.</p>
+
+<div class="check open">
+  <div class="qlabel">Think about it</div>
+  <div class="qtext">Why is referential transparency useful when reasoning about programs?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"> Because expressions can be understood primarily through their values, rather than through hidden changes to program state elsewhere. You can reason about and substitute expressions based on their values without having to track hidden side effects. This is one reason the concept matters so much in functional programming. </div>
+
+</div>
+</section>
+
+<section class="slide" id="slide-16">
+<div class="page-label">Page 16</div>
+<h2>Eager and Lazy Evaluation</h2>
+<div class="lang-grid">
+  <div class="lang-card"><h4>Eager</h4><p>Evaluates arguments before passing them to a function.</p><pre><code>f(g(), h())
+→ evaluate g()
+→ evaluate h()
+→ call f(...)</code></pre></div>
+  <div class="lang-card"><h4>Lazy</h4><p>Delays computation until its result is actually needed.</p></div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">One subtlety: eager evaluation only tells us the arguments are evaluated <em>before</em> the call — it doesn't by itself say whether <code>g()</code> or <code>h()</code> goes first. That order is a separate rule of the language, on top of eager-vs-lazy.</p>
+<p>Lazy evaluation can avoid unnecessary computation and enables techniques that are awkward with purely eager evaluation. But it also means reasoning about a program requires asking not just <strong>what</strong> gets evaluated, but <strong>when — or whether — it gets evaluated at all.</strong></p>
+</section>
+
+<section class="slide" id="slide-17">
+<div class="page-label">Page 17</div>
+<h2>Try It: Short-Circuit Evaluation in Python</h2>
+<p>Python gives us a concrete example of conditional evaluation through its Boolean operators.</p>
+<pre><code>def expensive():
+    print("computed")
+    return True</code></pre>
+<p>Predict, then run:</p>
+<pre><code>False and expensive()</code></pre>
+<p style="font-size:14px; color:var(--ink-soft);">Will "computed" print?</p>
+<p>Now predict, then run:</p>
+<pre><code>True or expensive()</code></pre>
+
+<div class="check open">
+  <div class="qlabel">What happened?</div>
+  <div class="qtext">In both cases, does Python call <code>expensive()</code>?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">No — in neither case. Python doesn't evaluate the right-hand side of <code>and</code>/<code>or</code> once the result is already determined: <code>False and ...</code> is always False regardless of the right side, and <code>True or ...</code> is always True regardless of the right side. This is <strong>short-circuit evaluation</strong> — a concrete example of delayed evaluation. It's a narrow, specific exception, though: it doesn't make Python a generally lazy language, just these two operators.</div>
+</div>
+</section>
+
+
+<section class="slide" id="slide-18">
+<div class="page-label">Page 18</div>
+<h2>Errors During Evaluation</h2>
+<p>The previous topics showed different places where problems can occur. Now we can complete the picture.</p>
+<table>
+  <tr><td><code>10 ? 2</code>, where <code>?</code> isn't a valid symbol</td><td>Detected during <strong>lexical analysis</strong></td></tr>
+  <tr><td><code>10 + * 2</code> — valid tokens, invalid arrangement</td><td>Detected during <strong>syntax analysis</strong></td></tr>
+  <tr><td><code>10 / 0</code> — valid tokens, valid structure</td><td>Detected during <strong>evaluation</strong></td></tr>
+</table>
+<div class="diagram">
+  <div class="pipeline">
+    <div class="artifact">CHARACTERS</div><div class="arr">↓</div>
+    <div class="process p1">Lexical Analysis</div><div class="arr">↓</div>
+    <div class="artifact">TOKENS</div><div class="arr">↓</div>
+    <div class="process p1">Syntax Analysis</div><div class="arr">↓</div>
+    <div class="artifact">AST</div><div class="arr">↓</div>
+    <div class="process p3">Evaluation</div><div class="arr">↓</div>
+    <div class="artifact">VALUE OR RUNTIME ERROR</div>
+  </div>
+</div>
+<div class="callout">Different kinds of errors become visible at different stages of language processing.</div>
+</section>
+
+<section class="slide" id="slide-19">
+<div class="page-label">Page 19</div>
+<h2>Check Your Understanding</h2>
+<p style="font-size:14px; color:var(--ink-soft);">Six questions that ask you to put this topic's ideas together, not just recall definitions. Not graded — just for you to check where things stand before moving on.</p>
+
+<div class="check open">
+  <div class="qlabel">1 · Trace it</div>
+  <div class="qtext">Trace this AST by hand: <code>Multiply(Add(2, 3), Subtract(9, 4))</code></div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>Add(2, 3) → 5</code>, <code>Subtract(9, 4) → 5</code>, then <code>Multiply(5, 5) → 25</code>.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">2 · Apply it</div>
+  <div class="qtext">Take <code>x = 10 / 0</code>. What's syntactically valid about it, and what does evaluating it reveal?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Syntactically, it's completely fine — dividing one number by another is an ordinary valid expression, no grammar rule objects. The problem only shows up once you actually evaluate it: there's no valid value for division by zero. That's exactly why this kind of problem is only detectable during evaluation, not before.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">3 · Apply it</div>
+  <div class="qtext">For <code>y = x + 1</code>, describe its meaning three ways: operationally, denotationally, and axiomatically.</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><strong>Operational:</strong> look up <code>x</code>, add 1, assign the result to <code>y</code>. <strong>Denotational:</strong> ⟦x + 1⟧ = the value of x, plus one. <strong>Axiomatic:</strong> <code>{x = n} y = x + 1 {y = n + 1}</code>.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">4 · Apply it</div>
+  <div class="qtext">Suppose <code>f()</code> adds 1 to a shared counter and <code>g()</code> doubles it. Why might <code>f() + g()</code> and <code>g() + f()</code> leave the counter in different final states?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">
+  Because both functions have side effects on the <em>same</em> shared state, evaluation order determines which side effect happens first. If the language evaluates the calls in the written order, the second function sees the state already changed by the first. Therefore, changing the order can change the final state even though the same two operations are performed.
+</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">5 · Apply it</div>
+  <div class="qtext">In a fully eager language with no short-circuiting, what would <code>False and expensive()</code> do differently than it does in Python?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">It would call <code>expensive()</code> regardless — printing its side effect and computing its return value — even though the overall result is guaranteed to be <code>False</code> no matter what <code>expensive()</code> returns. Python's short-circuiting skips that unnecessary work entirely.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">6 · Diagnose</div>
+  <div class="qtext">For each, identify where the problem is first detected — lexical analysis, syntax analysis, or evaluation: (a) <code>x = 5 ? 2</code>, (b) <code>if x then y</code> with no colon, (c) <code>x = [1, 2][5]</code></div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">(a) Lexical — <code>?</code> isn't a valid token. (b) Syntax — every token is valid, but the arrangement isn't. (c) Evaluation — the structure is completely valid; the index just doesn't exist once the expression actually runs.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-20">
+<div class="page-label">Summary</div>
+<h2>The Big Picture</h2>
+<p>Back to our running tree one last time:</p>
+<div class="diagram" style="text-align:left;">
+  <div class="tree">
+    AST → evaluate Number(2) → 2<br>
+    → evaluate Multiply → 3 × 4 → 12<br>
+    → evaluate Add → 2 + 12 → 14
+  </div>
+</div>
+<div class="diagram"><div class="flow">
+  <div class="flow-box">Structure</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">Meaning</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">Behavior</div><div class="flow-arrow">↓</div>
+  <div class="flow-box process">Value / Effect</div>
+</div></div>
+<p>We can now see the first part of the language-processing pipeline complete:</p>
+<div class="diagram">
+  <div class="pipeline">
+    <div class="artifact">SOURCE CODE</div><div class="arr">↓</div>
+    <div class="process p1">Lexer</div><div class="arr">↓</div>
+    <div class="artifact">TOKENS</div><div class="arr">↓</div>
+    <div class="process p2">Parser</div><div class="arr">↓</div>
+    <div class="artifact">AST</div><div class="arr">↓</div>
+    <div class="process p3">Evaluator</div><div class="arr">↓</div>
+    <div class="artifact">VALUE / EFFECT</div>
+  </div>
+</div>
+<table>
+  <tr><th>Topic 1</th><td>What programming languages are, and how they differ.</td></tr>
+  <tr><th>Topic 2</th><td>How source characters become tokens.</td></tr>
+  <tr><th>Topic 3</th><td>How those tokens become structure.</td></tr>
+  <tr><th>Topic 4</th><td>What that structure means, and how it's evaluated.</td></tr>
+</table>
+<div class="callout">What kinds of values can programs manipulate, and how do languages determine which operations are valid for those values? That's Topic 5: types and type systems.</div>
+</section>
+
+<div class="end-note" id="endNote" style="display:none; text-align:center; padding:40px 24px; color:var(--ink-soft);">
+  <h3 style="font-size:22px; margin-bottom:10px;">End of Topic 4</h3>
+  <p>Use Previous to review any page.</p>
+</div>
+
+</div>
+
+<div class="navbar">
+  <div class="bar-inner">
+    <button class="navbtn secondary" id="prevBtn">← Previous</button>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="navbtn" id="nextBtn">Next →</button>
+  </div>
+</div>
+
+<script src="../assets/lesson.js"></script>
+</body>
+</html>
