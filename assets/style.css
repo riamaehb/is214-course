@@ -104,6 +104,9 @@
   .opt.correct{border-color:var(--execution); background:var(--execution-bg);}
   .opt.wrong{border-color:#B5432E; background:#F6E2DC;}
   .fb{margin-top:10px; font-size:14.5px; color:var(--ink-soft);}
+  .opt-row{margin-bottom:8px;}
+  .opt-row .opt{margin-bottom:0;}
+  .opt-fb{display:none;}
 
   /* ===== REVEAL (open-ended) ===== */
   .reveal-btn{font-family:'IBM Plex Mono',monospace; font-size:13px; background:var(--ink); color:var(--paper); border:none; border-radius:6px; padding:9px 16px; cursor:pointer;}

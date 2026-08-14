@@ -11,6 +11,18 @@
   var endNote = document.getElementById('endNote');
   totalNum.textContent = total;
 
+  function resetChecks(){
+    document.querySelectorAll('.opt.correct, .opt.wrong').forEach(function(b){
+      b.classList.remove('correct','wrong');
+    });
+    document.querySelectorAll('.check .fb').forEach(function(f){ f.innerHTML = ''; });
+    document.querySelectorAll('.reveal-content.show').forEach(function(c){
+      c.classList.remove('show');
+      var btn = c.previousElementSibling;
+      if(btn && btn.classList.contains('reveal-btn')) btn.textContent = btn.textContent.replace('Hide','Reveal');
+    });
+  }
+
   function render(){
     slides.forEach(function(s, i){ s.classList.toggle('active', i === idx); });
     curNum.textContent = idx + 1;
@@ -19,6 +31,7 @@
     nextBtn.textContent = (idx === total - 1) ? 'Finish' : 'Next →';
     endNote.style.display = 'none';
     document.querySelector('.wrap').scrollTop = 0;
+    resetChecks();
   }
   prevBtn.addEventListener('click', function(){
     if(idx > 0){ idx--; render(); }
