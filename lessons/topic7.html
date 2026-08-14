@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 — Topic 7: Functions & Abstraction</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="bar-inner">
+    <div class="brand">IS 214 · <strong>Topic 7</strong></div>
+    <div class="triad-strip"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+    <div class="counter"><span id="curNum">1</span> / <span id="totalNum">17</span></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section class="slide active" id="slide-0">
+<div class="hero-inline">
+  <div class="eyebrow">IS 214 · TOPIC 7 · STUDY GUIDE</div>
+  <h1>Functions &amp; Abstraction</h1>
+  <div class="triad">
+    <div class="triad-node syn"><h4>SYNTAX</h4><p>what is valid</p></div>
+    <div class="triad-node sem"><h4>SEMANTICS</h4><p>what it means</p></div>
+    <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
+  </div>
+</div>
+<p>Topic 6 established: <strong>name → binding → scope → environment → closure</strong>. This topic asks: <strong>what happens when a name refers to a function, and what does the runtime have to do when that function is called?</strong></p>
+<p>Functions aren't just reusable blocks of code — they're <strong>values</strong> that can be called, passed around, returned, and associated with environments. The <strong>call environment</strong> is the central idea of this lesson: everything else — recursion, higher-order functions, closures — follows directly from it, rather than being separate features to memorize.</p>
+<h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
+<ul>
+  <li>explain why a function is a value, not just a block of code;</li>
+  <li>distinguish parameters from arguments;</li>
+  <li>explain how a function call creates a new environment;</li>
+  <li>distinguish returning a value from printing one;</li>
+  <li>explain recursion in terms of separate call environments;</li>
+  <li>trace a higher-order function call;</li>
+  <li>distinguish a captured environment from a call environment in a closure; and</li>
+  <li>describe what an interpreter must do to execute a function call.</li>
+</ul>
+<p style="font-size:14px; color:var(--ink-soft); margin-top:24px;"><strong>Estimated study time:</strong> 90–120 minutes.</p>
+</section>
+
+<section class="slide" id="slide-1">
+<div class="page-label">Page 1</div>
+<h2>What Is a Function?</h2>
+<pre><code>def square(x):
+    return x * x</code></pre>
+<table>
+  <tr><td><code>square</code></td><td>function name</td></tr>
+  <tr><td><code>x</code></td><td>parameter</td></tr>
+  <tr><td><code>return x * x</code></td><td>body / return expression</td></tr>
+</table>
+<div class="callout">What actually happens when square(5) is evaluated?</div>
+<p>That question is what this whole lesson answers — and it starts with a distinction:</p>
+<pre><code>def square(x):      # definition
+    return x * x
+
+square(5)            # call</code></pre>
+<div class="diagram"><div class="flow">
+  <div class="flow-box">function definition</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">function value</div><div class="flow-arrow">↓</div>
+  <div class="flow-box process">name → function</div>
+</div></div>
+<p>A <strong>definition</strong> creates a function value and establishes a binding between its name and that value — exactly the binding model from Topic 6. A <strong>call</strong> invokes that value. They're not the same event, and the rest of this lesson is mostly about what happens during the second one.</p>
+</section>
+
+<section class="slide" id="slide-2">
+<div class="page-label">Page 2</div>
+<h2>Functions as Values</h2>
+<pre><code>def square(x):
+    return x * x
+
+f = square
+f(5)</code></pre>
+<div class="callout">What does f refer to?</div>
+<p>Not the number 25 — <code>f</code> refers to the <em>function itself</em>. <code>f = square</code> is an ordinary binding, exactly like <code>y = x</code> was in Topic 6:</p>
+<div class="diagram"><div class="flow">
+  <div class="flow-box">f</div><div class="flow-arrow">↓</div>
+  <div class="flow-box process">binding</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">function value</div>
+</div></div>
+<div class="callout">A function can itself be a value.</div>
+<p style="font-size:14px; color:var(--ink-soft);">This one idea is what makes higher-order functions possible later in this lesson — a function is just another kind of value that names can be bound to, passed around, and returned.</p>
+</section>
+
+<section class="slide" id="slide-3">
+<div class="page-label">Page 3</div>
+<h2>Parameters and Arguments</h2>
+<pre><code>def add(x, y):
+    return x + y
+
+add(2, 3)</code></pre>
+<table>
+  <tr><td><code>x</code>, <code>y</code></td><td>parameters — names in the definition</td></tr>
+  <tr><td><code>2</code>, <code>3</code></td><td>arguments — values in the call</td></tr>
+</table>
+<p>When the call happens, each parameter gets bound to its corresponding argument:</p>
+<div class="diagram" style="text-align:left;">
+  <div class="tree">x → 2<br>y → 3</div>
+</div>
+
+<div class="check open">
+  <div class="qlabel">Predict</div>
+  <div class="qtext">Before evaluating anything else, what does <code>add(2, 3)</code> produce?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">5 — but notice what had to happen first: x and y needed to be bound to 2 and 3 <em>somewhere</em> before <code>x + y</code> could even be evaluated. That "somewhere" is exactly what the next page is about.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-4">
+<div class="page-label">Page 4</div>
+<h2>Function Calls Create Environments</h2>
+<p>This is the central idea of the entire lesson. For:</p>
+<pre><code>def add(x, y):
+    return x + y
+
+add(2, 3)</code></pre>
+<div class="diagram">
+  <div style="display:flex; flex-direction:column; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;">
+    <div style="border:1.5px solid var(--ink); border-radius:8px; padding:14px 24px;">
+      <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft); margin-bottom:6px;">Global Environment</div>
+      add → &lt;function&gt;
+    </div>
+    <div style="font-size:13px; color:var(--ink-soft);">↓ call</div>
+    <div style="border:1.5px solid var(--syntax); border-radius:8px; padding:14px 24px; background:var(--syntax-bg);">
+      <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--syntax); margin-bottom:6px;">Call Environment</div>
+      x → 2<br>y → 3
+    </div>
+  </div>
+</div>
+<pre><code>x + y  →  2 + 3  →  5</code></pre>
+<div class="callout">A function call creates a new environment in which its parameters and local bindings are established.</div>
+<p style="font-size:14px; color:var(--ink-soft);">This is the direct continuation of Topic 6 — a call environment is an environment for this specific invocation, and its parent links to whatever environment is used to resolve names from the function's definition. Here that happens to be the global environment; later in this lesson, you'll see it can be something more specific.</p>
+</section>
+
+<section class="slide" id="slide-5">
+<div class="page-label">Page 5</div>
+<h2>What Happens During a Function Call?</h2>
+<p>Spelling out the sequence behind the diagram on the last page — this is the core operational model worth remembering:</p>
+<div class="diagram">
+  <div class="pipeline">
+    <div class="artifact">FUNCTION CALL</div><div class="arr">↓</div>
+    <div class="process p1">Evaluate function expression</div><div class="arr">↓</div>
+    <div class="process p1">Evaluate arguments</div><div class="arr">↓</div>
+    <div class="process p2">Create call environment</div><div class="arr">↓</div>
+    <div class="process p2">Bind parameters to arguments</div><div class="arr">↓</div>
+    <div class="process p3">Evaluate function body</div><div class="arr">↓</div>
+    <div class="artifact">RETURN VALUE</div><div class="arr">↓</div>
+    <div class="artifact">RETURN TO CALLER</div>
+  </div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">Keep this conceptual for now — you don't need to implement a complete call mechanism yet. What matters is having this sequence in mind every time you see a function call from here on.</p>
+</section>
+
+<section class="slide" id="slide-6">
+<div class="page-label">Page 6</div>
+<h2>Return Values</h2>
+<pre><code>def double(x):
+    return x * 2
+
+y = double(5)</code></pre>
+<div class="diagram" style="text-align:left;">
+  <div class="tree">double(5)<br>↓<br>10<br>↓<br>y → 10</div>
+</div>
+<p><code>return</code> does four things:</p>
+<ol>
+  <li>evaluates its expression;</li>
+  <li>produces a value;</li>
+  <li>ends the current function call;</li>
+  <li>gives that value back to the caller.</li>
+</ol>
+</section>
+
+<section class="slide" id="slide-7">
+<div class="page-label">Page 7</div>
+<h2>Return vs. Print</h2>
+<pre><code>def printed():
+    print(5)
+
+def returned():
+    return 5
+
+a = printed()
+b = returned()</code></pre>
+
+<div class="check" data-answer="1">
+  <div class="qlabel">Predict</div>
+  <div class="qtext">What does <code>a</code> refer to after <code>a = printed()</code>?</div>
+  <div class="opt-row"><button class="opt">5</button><div class="opt-fb">Not quite — printed() displays 5 on screen, but that's not the same as producing a value for the caller. Nothing was returned.</div></div>
+  <div class="opt-row"><button class="opt">None</button><div class="opt-fb">Correct — printed() never executes a return statement, so it implicitly returns None. The "5" you see is just output; it isn't the function's value.</div></div>
+  <div class="fb"></div>
+</div>
+<div class="callout">Printing produces output. Returning produces a value for the caller.</div>
+<p style="font-size:14px; color:var(--ink-soft);">This distinction matters directly for the interpreter you're building — an evaluator has to keep output behavior (a side effect) separate from the value an expression actually produces.</p>
+</section>
+
+<section class="slide" id="slide-8">
+<div class="page-label">Page 8</div>
+<h2>Every Function Call Gets Its Own Environment</h2>
+<pre><code>def add(x, y):
+    return x + y
+
+a = add(2, 3)
+b = add(10, 20)</code></pre>
+<div class="lang-grid">
+  <div class="lang-card"><h4>Call 1</h4><div class="tree">x → 2<br>y → 3</div></div>
+  <div class="lang-card"><h4>Call 2</h4><div class="tree">x → 10<br>y → 20</div></div>
+</div>
+<div class="callout">Each function call gets its own call environment.</div>
+<p>Now apply that to a function that calls <em>itself</em>:</p>
+<pre><code>def factorial(n):
+    if n == 0:
+        return 1
+    return n * factorial(n - 1)</code></pre>
+<div class="diagram" style="text-align:left;">
+  <div class="tree">
+    factorial(3): n → 3<br>
+    factorial(2): n → 2<br>
+    factorial(1): n → 1<br>
+    factorial(0): n → 0<br>
+    <br>
+    factorial(0) → 1<br>
+    factorial(1) → 1<br>
+    factorial(2) → 2<br>
+    factorial(3) → 6
+  </div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">The factorial algorithm itself isn't the point. The point: <strong>every recursive call creates another call environment</strong> — four calls to the same function, four separate <code>n</code> bindings, none of them interfering with each other.</p>
+</section>
+
+<section class="slide" id="slide-9">
+<div class="page-label">Page 9</div>
+<h2>Trace a Function Call</h2>
+<pre><code>def add(x, y):
+    z = x + y
+    return z
+
+result = add(2, 3)</code></pre>
+<p>Trace through, in order:</p>
+<ol>
+  <li>the function value bound to <code>add</code>;</li>
+  <li>the call <code>add(2, 3)</code>;</li>
+  <li>the call environment it creates;</li>
+  <li>the parameter bindings <code>x → 2</code>, <code>y → 3</code>;</li>
+  <li>the local binding <code>z</code>;</li>
+  <li>evaluation of <code>x + y</code>;</li>
+  <li>the return value;</li>
+  <li>the final binding of <code>result</code>.</li>
+</ol>
+
+<div class="check open">
+  <div class="qlabel">Trace it</div>
+  <div class="qtext">What is the final state — what does <code>result</code> refer to, and what happened to the call environment's <code>z</code>?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>result → 5</code>. The call environment — with its <code>x</code>, <code>y</code>, and <code>z</code> bindings — is no longer needed for this call once <code>add</code> returns. The returned value, 5, is then bound to <code>result</code> in the caller's environment.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-10">
+<div class="page-label">Page 10</div>
+<h2>Higher-Order Functions</h2>
+<p>Since functions are values, a function can be passed as an argument:</p>
+<pre><code>def apply(f, x):
+    return f(x)
+
+def square(x):
+    return x * x
+
+apply(square, 4)</code></pre>
+<div class="callout">square is a function value. square(4) is the result of calling it. These are not the same thing.</div>
+
+<div class="check open">
+  <div class="qlabel">Trace it</div>
+  <div class="qtext">Trace <code>apply(square, 4)</code>: what's bound to <code>f</code>? What's bound to <code>x</code>? What does <code>f(x)</code> mean once inside <code>apply</code>? What's the final result?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>f → square</code> (the function value itself, not a call to it) and <code>x → 4</code>. Inside <code>apply</code>, <code>f(x)</code> means "call whatever function <code>f</code> is currently bound to, with argument <code>x</code>" — which becomes <code>square(4)</code>, producing 16. Nothing about <code>apply</code>'s code needed to know in advance which function it would be given.</div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">If <code>square</code> were replaced by a different function entirely, <code>apply</code>'s code wouldn't need to change at all — that's the payoff of treating functions as ordinary values.</p>
+</section>
+
+<section class="slide" id="slide-11">
+<div class="page-label">Page 11</div>
+<h2>Closures Revisited</h2>
+<p>Back to Topic 6's <code>make_adder</code> — this time with a distinction Topic 6 didn't need to draw yet:</p>
+<pre><code>def make_adder(x):
+    def add(y):
+        return x + y
+    return add
+
+add5 = make_adder(5)
+add5(3)</code></pre>
+<div class="callout">A closure is a function together with the environment required to resolve its non-local names.</div>
+<p>There are actually <strong>two different environments</strong> involved here, and they're easy to conflate:</p>
+<div class="diagram">
+  <div style="display:flex; flex-direction:column; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;">
+    <div style="border:1.5px solid var(--semantics); border-radius:8px; padding:14px 24px; background:var(--semantics-bg);">
+      <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--semantics); margin-bottom:6px;">Captured Environment (from make_adder(5))</div>
+      x → 5
+    </div>
+    <div style="font-size:13px; color:var(--ink-soft);">↓ parent</div>
+    <div style="border:1.5px solid var(--syntax); border-radius:8px; padding:14px 24px; background:var(--syntax-bg);">
+      <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--syntax); margin-bottom:6px;">Call Environment (from add5(3))</div>
+      y → 3
+    </div>
+  </div>
+</div>
+<table>
+  <tr><th>Captured environment</th><td>Belongs to the function value itself — created once, when <code>make_adder(5)</code> ran, and kept alive by <code>add5</code>.</td></tr>
+  <tr><th>Call environment</th><td>Created fresh every time <code>add5</code> is actually called — a brand new one for <code>add5(3)</code>, with its parent pointing to the captured environment.</td></tr>
+</table>
+<p style="font-size:14px; color:var(--ink-soft);">Looking up <code>x</code> during <code>add5(3)</code> fails in the call environment, then succeeds in the captured environment via the parent pointer — the same nested-lookup mechanism from Topic 6, just now with the parent being a captured environment instead of the global one.</p>
+</section>
+
+<section class="slide" id="slide-12">
+<div class="page-label">Page 12</div>
+<h2>Abstraction and Function Identity</h2>
+<div class="callout">Why do we use functions at all?</div>
+<pre><code>def calculate_total(price, tax):
+    return price + price * tax</code></pre>
+<p>Whoever calls <code>calculate_total</code> doesn't need to know how it's implemented — just what it does. That's <strong>abstraction</strong>: functions give us decomposition, reuse, parameterization, encapsulation, and composability, all from the same mechanism you've been tracing this whole lesson.</p>
+<p>One more quick distinction, already implicit in everything above:</p>
+<table>
+  <tr><td><code>f</code></td><td>the function value itself</td></tr>
+  <tr><td><code>f()</code></td><td>invoking it</td></tr>
+</table>
+<p style="font-size:14px; color:var(--ink-soft);">This is exactly why a function can be passed as an argument or returned from another function — <code>f</code> alone is just a value, ready to be handled like any other.</p>
+</section>
+
+<section class="slide" id="slide-13">
+<div class="page-label">Page 13</div>
+<h2>Trace a Closure</h2>
+<p>The major synthesis activity of this topic — everything so far, in one example:</p>
+<pre><code>def make_multiplier(n):
+    def multiply(x):
+        return x * n
+    return multiply
+
+double = make_multiplier(2)
+result = double(5)</code></pre>
+<p>Trace through, in order:</p>
+<ol>
+  <li>creation of <code>make_multiplier</code>;</li>
+  <li>the call <code>make_multiplier(2)</code>;</li>
+  <li>the binding <code>n → 2</code>;</li>
+  <li>creation of <code>multiply</code>, inside that environment;</li>
+  <li>the environment <code>multiply</code> captures;</li>
+  <li>the returned function value, bound to <code>double</code>;</li>
+  <li>the call <code>double(5)</code>;</li>
+  <li>the new call environment it creates;</li>
+  <li>the binding <code>x → 5</code>;</li>
+  <li>lookup of <code>n</code>, through the captured environment;</li>
+  <li>evaluation of <code>x * n</code>;</li>
+  <li>the final result.</li>
+</ol>
+
+<div class="check open">
+  <div class="qlabel">Trace it</div>
+  <div class="qtext">What does <code>result</code> refer to at the end?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>result → 10</code>. <code>double</code>'s captured environment holds <code>n → 2</code>. Calling <code>double(5)</code> creates a fresh call environment with <code>x → 5</code>, whose parent is that captured environment. Evaluating <code>x * n</code> looks up <code>x</code> locally (5) and <code>n</code> through the parent pointer (2), giving <code>5 * 2 = 10</code>.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-14">
+<div class="page-label">Page 14</div>
+<h2>The Interpreter's Model of a Function Call</h2>
+<div class="callout">What would our interpreter have to do when it encounters a function call?</div>
+<p>Everything from this lesson, brought together as one sequence an evaluator actually has to carry out:</p>
+<div class="diagram">
+  <div class="pipeline">
+    <div class="artifact">AST: FunctionCall</div><div class="arr">↓</div>
+    <div class="process p1">Evaluate function expression</div><div class="arr">↓</div>
+    <div class="process p1">Evaluate arguments</div><div class="arr">↓</div>
+    <div class="process p2">Obtain function value</div><div class="arr">↓</div>
+    <div class="process p2">Create call environment</div><div class="arr">↓</div>
+    <div class="process p2">Bind parameters</div><div class="arr">↓</div>
+    <div class="process p3">Evaluate body</div><div class="arr">↓</div>
+    <div class="artifact">RETURN RESULT</div>
+  </div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">This is the direct bridge to your interpreter's actual implementation — a function call is not a single mysterious step, but this exact sequence, every time.</p>
+</section>
+
+<section class="slide" id="slide-15">
+<div class="page-label">Page 15</div>
+<h2>Check Your Understanding</h2>
+<p style="font-size:14px; color:var(--ink-soft);">Nine questions that ask you to apply this topic's ideas. Not graded — just for you to check where things stand before moving on.</p>
+
+<div class="check open">
+  <div class="qlabel">1 · Defining vs. calling</div>
+  <div class="qtext">Between writing <code>def square(x): return x * x</code> and later writing <code>square(5)</code>, what actually happens at each point?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">The <code>def</code> creates a function value and binds it to the name <code>square</code> — nothing is computed yet. <code>square(5)</code> is a separate event: it invokes that function value, which is when a call environment gets created and the body actually runs.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">2 · Parameters vs. arguments</div>
+  <div class="qtext">In <code>def add(x, y): return x + y</code> followed by <code>add(2, 3)</code>, which are the parameters and which are the arguments?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>x</code> and <code>y</code> are parameters — names that exist in the definition. <code>2</code> and <code>3</code> are arguments — the actual values supplied at the call site, which get bound to those parameter names.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">3 · Functions as values</div>
+  <div class="qtext">Given <code>f = square</code>, what does <code>f</code> refer to, and why does that matter for passing functions around?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>f</code> refers to the function itself, not to any result of calling it. Because a function is just an ordinary value like any other, it can be bound to a new name, stored, passed as an argument, or returned from another function — exactly like a number or string could be.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">4 · Call environments</div>
+  <div class="qtext">Why can't <code>x + y</code> inside <code>add</code>'s body be evaluated before the call environment exists?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>x</code> and <code>y</code> are names — evaluating them requires looking them up in some environment. Until the call happens and a call environment is created with those parameters bound to their arguments, there's nowhere for that lookup to even happen.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">5 · Return vs. print</div>
+  <div class="qtext">A function prints a value but never uses <code>return</code>. What does calling it actually produce as a value, and how is that different from what appears on screen?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">It produces <code>None</code> — printing is output, a side effect, and has nothing to do with what value the function call itself evaluates to. What you see on screen and what the caller actually receives are two entirely separate things.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">6 · Recursion</div>
+  <div class="qtext">Looking back at the <code>factorial(3)</code> trace from Page 8: when <code>factorial(0)</code> is executing, how many active <code>n</code> bindings exist across the whole call chain, and why doesn't that cause confusion?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Four — one per active call: factorial(3) with n → 3, factorial(2) with n → 2, factorial(1) with n → 1, and factorial(0) with n → 0, all still on the way down. There's no confusion because each call environment is independent; they never interfere, even though they're all bindings for the same parameter name in the same function.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">7 · Higher-order functions</div>
+  <div class="qtext">In <code>apply(square, 4)</code>, why is <code>apply</code> considered a higher-order function?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Because it takes a function (<code>square</code>) as one of its arguments — it operates on functions as data, not just on plain values. <code>apply</code>'s own code never needed to know in advance which specific function it would be handed.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">8 · Closures</div>
+  <div class="qtext"><code>add5(3)</code> involves two different environments at once. What are they, and how do they relate?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">The captured environment (from when <code>make_adder(5)</code> ran, holding <code>x → 5</code>) and a fresh call environment (created for this specific call to <code>add5</code>, holding <code>y → 3</code>). The call environment's parent pointer leads to the captured one, so a lookup for <code>x</code> during the call succeeds by following that link.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">9 · Abstraction</div>
+  <div class="qtext">A caller uses <code>calculate_total(price, tax)</code> without knowing how it's implemented. What does that let the caller do that they couldn't do otherwise?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Use the computation by name, based only on what it does, without needing to understand or repeat how it does it. That's the point of abstraction — it lets you compose larger programs out of pieces whose internals you don't have to hold in your head all at once.</div>
+</div>
+
+<div class="qbox" style="margin-top:24px;">
+  <div class="qlabel">Final synthesis</div>
+  <p style="margin-bottom:0;"><strong>If Topic 6 explains how names are resolved through environments, what does Topic 7 add?</strong></p>
+  <button class="reveal-btn" style="margin-top:14px;">Reveal answer</button>
+  <div class="reveal-content">Functions create new environments, receive values through parameters, produce values through returns, and can themselves be passed around as values.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-16">
+<div class="page-label">Summary</div>
+<h2>The Big Picture</h2>
+<div class="diagram">
+  <div class="pipeline">
+    <div class="artifact">FUNCTION</div><div class="arr">↓</div>
+    <div class="artifact">FUNCTION VALUE</div><div class="arr">↓</div>
+    <div class="artifact">PARAMETERS + ARGUMENTS</div><div class="arr">↓</div>
+    <div class="artifact">CALL ENVIRONMENT</div><div class="arr">↓</div>
+    <div class="artifact">EVALUATION</div><div class="arr">↓</div>
+    <div class="artifact">RETURN VALUE</div><div class="arr">↓</div>
+    <div class="artifact">HIGHER-ORDER FUNCTION</div><div class="arr">↓</div>
+    <div class="artifact">CLOSURE</div><div class="arr">↓</div>
+    <div class="artifact">ABSTRACTION</div>
+  </div>
+</div>
+<table>
+  <tr><th>Topic 5</th><td>value → type → valid operation.</td></tr>
+  <tr><th>Topic 6</th><td>name → binding → scope → environment → closure.</td></tr>
+  <tr><th>Topic 7</th><td>function → call environment → return → abstraction.</td></tr>
+</table>
+<div class="callout">If an environment tells us what a name refers to, and a function call creates a new environment, what happens when execution has to choose between paths, repeat something, or handle something going wrong? That's Topic 8: control flow, iteration, and exceptions.</div>
+</section>
+
+<div class="end-note" id="endNote" style="display:none; text-align:center; padding:40px 24px; color:var(--ink-soft);">
+  <h3 style="font-size:22px; margin-bottom:10px;">End of Topic 7</h3>
+  <p>Use Previous to review any page.</p>
+</div>
+
+</div>
+
+<div class="navbar">
+  <div class="bar-inner">
+    <button class="navbtn secondary" id="prevBtn">← Previous</button>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="navbtn" id="nextBtn">Next →</button>
+  </div>
+</div>
+
+<script src="../assets/lesson.js"></script>
+</body>
+</html>
