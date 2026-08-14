@@ -28,8 +28,8 @@
       <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
     </div>
   </div>
-  <p>Topics 4–7 established how individual computations work: expressions produce values, values have types, names resolve through environments, and function calls create new environments. This topic shifts the question. Instead of <strong>what does this produce</strong>, it asks: <strong>which part of the program executes next, and why?</strong></p>
-  <p>Control flow is the language's mechanism for deciding what executes next. Exceptions are part of the same idea: they provide another mechanism for changing the normal execution path.</p>
+  <p>Topics 4–7 established how individual computations work: expressions produce values, values have types, names resolve through environments, and function calls create new environments. Now we shift the question. Instead of <strong>what does this produce</strong>, we ask: <strong>which part of the program executes next, and why?</strong></p>
+  <p>Control flow is the language's mechanism for deciding what executes next. Exceptions fit into the same picture: they provide another way to change the normal execution path.</p>
   <h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
   <ul>
     <li>explain control flow as the mechanism deciding what executes next;</li>
@@ -50,7 +50,7 @@ if x > 5:
     print("large")
 print("done")</code></pre>
 <div class="callout">Does every statement execute?</div>
-<p>The last line always runs. The middle line depends on <code>x</code>. Change <code>x</code> to 3, and the printed output changes — nothing about the expressions themselves changed, only which ones get reached.</p>
+<p>The last line always runs. The middle line depends on <code>x</code>. Change <code>x</code> to 3, and the output changes. The expressions themselves haven't changed; what changes is which ones the program actually reaches.</p>
 <table>
   <tr><th>Topic 4</th><td>What value does this expression produce?</td></tr>
   <tr><th>Topic 8</th><td>Which part of the program executes next?</td></tr>
@@ -60,7 +60,7 @@ print("done")</code></pre>
   <div class="flow-box">execution path</div><div class="flow-arrow">↓</div>
   <div class="flow-box process">branch / repeat / skip / stop</div>
 </div></div>
-<p style="font-size:14px; color:var(--ink-soft);">By default, a program executes sequentially — statement 1, then 2, then 3, in order. Everything in this topic is about the constructs that modify that default path.</p>
+<p style="font-size:14px; color:var(--ink-soft);">By default, a program executes sequentially — statement 1, then 2, then 3, in order. Everything in this topic is about the constructs that change that default path.</p>
 </section>
 
 <section class="slide" id="slide-2">
@@ -69,7 +69,7 @@ print("done")</code></pre>
 <pre><code>x = 10
 if x > 5:
     print("yes")</code></pre>
-<div class="callout">The condition is evaluated, and its result determines the execution path.</div>
+<div class="callout">The condition is evaluated first, and its result determines which execution path is taken.</div>
 <pre><code>if x > 5:
     result = "large"
 else:
@@ -120,7 +120,7 @@ else:
 <h2>Boolean Decisions, Revisited</h2>
 <pre><code>if x != 0 and 10 / x > 2:
     ...</code></pre>
-<p style="font-size:14px; color:var(--ink-soft);">You saw in Topic 4 that Python may not evaluate the second operand of <code>and</code>. Here, notice what that means for the execution path specifically: if <code>x == 0</code>, the <code>10 / x</code> check never even runs — so no <code>ZeroDivisionError</code>, not because of any special handling, but because that part of the condition was never reached.</p>
+<p style="font-size:14px; color:var(--ink-soft);">You saw in Topic 4 that Python may not evaluate the second operand of <code>and</code>. Here, notice what that means for the execution path: if <code>x == 0</code>, the <code>10 / x</code> check never runs. So there is no <code>ZeroDivisionError</code> — not because anything caught it, but because that part of the condition was never reached.</p>
 <div class="diagram"><div class="flow">
   <div class="flow-box">evaluate first condition</div><div class="flow-arrow">↓</div>
   <div class="flow-box">false?</div><div class="flow-arrow">↓</div>
@@ -133,8 +133,8 @@ else:
 if 1: ...        # runs
 if "": ...       # skipped
 if "hello": ...  # runs</code></pre>
-<p style="font-size:14px; color:var(--ink-soft);">A condition doesn't have to literally produce <code>True</code> or <code>False</code> — Python uses truth-value testing, and different types define their own notion of "truthy" and "falsy."</p>
-<p style="font-size:14px; color:var(--ink-soft);">Stepping back: languages differ in how they represent branching at all — but the underlying idea, <em>evaluate a condition, choose one path</em>, is what section 6 of a formal treatment would call <strong>selection</strong>. Same mechanism, different syntax across languages.</p>
+<p style="font-size:14px; color:var(--ink-soft);">A condition doesn't have to literally produce <code>True</code> or <code>False</code>. Python uses truth-value testing, and different types define what counts as "truthy" or "falsy."</p>
+<p style="font-size:14px; color:var(--ink-soft);">Stepping back: languages use different syntax for branching, but the underlying idea is the same: <em>evaluate a condition, choose one path</em>. A formal treatment would call this <strong>selection</strong>. The syntax changes across languages; the basic mechanism does not.</p>
 </section>
 
 <section class="slide" id="slide-5">
@@ -145,10 +145,10 @@ print(2)
 print(3)
 print(4)</code></pre>
 <div class="callout">What if this needs to happen 1,000 times?</div>
-<p>Writing the same statement 1,000 times isn't just tedious — it doesn't even work if the count isn't known in advance. <strong>Iteration causes a block of code to execute repeatedly.</strong></p>
+<p>Writing the same statement 1,000 times isn't just tedious. It also doesn't help when the number of repetitions isn't known in advance. <strong>Iteration causes a block of code to execute repeatedly.</strong></p>
 <pre><code>for i in range(4):
     print(i)</code></pre>
-<p style="font-size:14px; color:var(--ink-soft);">The focus here is the execution path — the same body running multiple times — not the specific syntax.</p>
+<p style="font-size:14px; color:var(--ink-soft);">The focus here is the execution path: the same body running multiple times, rather than the particular syntax used to express it.</p>
 </section>
 
 <section class="slide" id="slide-6">
@@ -162,7 +162,7 @@ print(4)</code></pre>
   <div class="flow-box">execute body</div><div class="flow-arrow">↓</div>
   <div class="flow-box">more values?</div><div class="flow-arrow">↓ yes → repeat · no → exit</div>
 </div></div>
-<p style="font-size:14px; color:var(--ink-soft);">Connect this to what you already know: the loop variable <code>x</code> is an ordinary binding (Topic 6), and the loop body executes repeatedly within the same surrounding execution context (Topic 7). Nothing new is needed to explain a <code>for</code> loop except "repeat, rebinding the loop variable to the next value each time." In Python, this is genuine rebinding, not a fresh isolated binding per iteration — the same name is reused, and it stays accessible after the loop ends too. We won't go into Python's iterator protocol in detail — the execution-path idea is what matters here.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Connect this to what you already know: the loop variable <code>x</code> is an ordinary binding (Topic 6), and the loop body executes repeatedly within the surrounding execution context (Topic 7). Nothing fundamentally new is needed to explain a <code>for</code> loop: repeat the body, rebinding the loop variable to the next value each time. In Python, this is genuine rebinding, not a fresh isolated binding per iteration. We won't go into the iterator protocol here — the execution-path idea is what matters.</p>
 </section>
 
 <section class="slide" id="slide-7">
@@ -232,7 +232,7 @@ while x < 10:
   <div class="opt-row"><button class="opt">1, 2, 3</button><div class="opt-fb">Not quite — that's what the continue version would print. break leaves the loop immediately, so nothing after -1 ever runs.</div></div>
   <div class="fb"></div>
 </div>
-<p style="font-size:14px; color:var(--ink-soft);">One more step back: iteration is another language mechanism for controlling execution, the same way selection was. Selection chooses a path; iteration repeats one.</p>
+<p style="font-size:14px; color:var(--ink-soft);">One more step back: iteration is another mechanism for controlling execution, just as selection was. Selection chooses a path; iteration repeats one.</p>
 </section>
 
 <section class="slide" id="slide-10">
@@ -247,7 +247,7 @@ while x < 10:
   <div class="flow-box process">normal control flow interrupted</div>
 </div></div>
 <div class="callout">An exception is a mechanism for changing the normal execution path when an exceptional condition occurs.</div>
-<p style="font-size:14px; color:var(--ink-soft);">Not just "an error message" — a genuine change in what executes next, the same category of thing as a conditional or a loop.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Not just "an error message." An exception genuinely changes what executes next, putting it in the same broad category as a conditional or a loop.</p>
 
 <div class="check open">
   <div class="qlabel">Predict</div>
@@ -266,7 +266,7 @@ while x < 10:
   <div class="tree">statement A<br>↓<br>raise exception<br>↓<br>normal path stops</div>
 </div>
 <div class="callout">What happens if nothing handles the exception?</div>
-<p style="font-size:14px; color:var(--ink-soft);">It doesn't just vanish — it <strong>propagates</strong>. The next few pages trace exactly where it goes.</p>
+<p style="font-size:14px; color:var(--ink-soft);">It doesn't just vanish — it <strong>propagates</strong>. Let's trace exactly where it goes.</p>
 </section>
 
 <section class="slide" id="slide-12">
@@ -295,7 +295,7 @@ except ZeroDivisionError:
   </div>
 </div>
 <div class="callout">Exception handling changes the execution path when an exception occurs.</div>
-<p style="font-size:14px; color:var(--ink-soft);">This is the central conceptual link between exceptions and everything else in this topic — a <code>try</code>/<code>except</code> also changes the execution path, but the alternative path is selected by whether an exception occurs, not by a condition's value.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This is the central link between exceptions and everything else in this topic: a <code>try</code>/<code>except</code> also changes the execution path, but here the alternative path is selected by whether an exception occurs, rather than by the value of a condition.</p>
 </section>
 
 <section class="slide" id="slide-13">
@@ -315,13 +315,13 @@ except ZeroDivisionError:
 <div class="diagram" style="text-align:left;">
   <div class="tree">calculate()<br>↓<br>divide()<br>↓<br>exception raised<br>↓<br>propagate outward<br>↓<br>handler found<br>↓<br>except block executes</div>
 </div>
-<p style="font-size:14px; color:var(--ink-soft);">The exception is raised inside <code>divide</code>, where there is no matching handler. It therefore propagates outward through the active function calls until a matching handler is found — the <code>try</code>/<code>except</code> surrounding the call to <code>calculate()</code> handles it. This connects to Topic 7: function calls form an active chain of execution, and an exception can transfer control across that chain.</p>
+<p style="font-size:14px; color:var(--ink-soft);">The exception is raised inside <code>divide</code>, where there is no matching handler. It propagates outward through the active function calls until a matching handler is found — here, the <code>try</code>/<code>except</code> surrounding the call to <code>calculate()</code>. This connects directly to Topic 7: function calls form an active chain of execution, and an exception can transfer control across that chain.</p>
 
 <div class="check open">
   <div class="qlabel">Trace it</div>
   <div class="qtext">If <code>divide</code> itself had its own <code>try</code>/<code>except ZeroDivisionError</code> around <code>x / y</code>, would the outer <code>try</code>/<code>except</code> in this example still run its <code>except</code> block?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">No. The exception would be caught right where it's raised, inside <code>divide</code>, and would never propagate any further — the outer <code>try</code> would see nothing go wrong at all. Propagation only continues past a function's boundary when that function itself doesn't handle the exception.</div>
+  <div class="reveal-content">No. The exception would be caught where it's raised, inside <code>divide</code>, and would never propagate further. The outer <code>try</code> would have nothing to handle. Propagation continues past a function boundary only when the current function does not handle the exception.</div>
 </div>
 </section>
 
@@ -344,13 +344,13 @@ except ValueError:
   <tr><td><code>ValueError</code></td><td><code>int("hello")</code></td></tr>
   <tr><td><code>TypeError</code></td><td><code>"10" + 5</code></td></tr>
 </table>
-<p style="font-size:14px; color:var(--ink-soft);">You don't need to memorize this hierarchy — just enough to recognize that <code>except SomeSpecificError</code> matches only that condition, not every possible failure.</p>
+<p style="font-size:14px; color:var(--ink-soft);">You don't need to memorize the hierarchy. Just recognize that <code>except SomeSpecificError</code> matches that exception type, rather than every possible failure.</p>
 </section>
 
 <section class="slide" id="slide-15">
 <div class="page-label">Page 15</div>
 <h2>Trace the Whole Execution Path: the Normal Path</h2>
-<p>The main synthesis activity of this topic, in two parts. First, a trace combining a function call, iteration, a conditional, <code>continue</code>, and a return:</p>
+<p>Here's the main synthesis activity for this topic, in two parts. First, a trace combining a function call, iteration, a conditional, <code>continue</code>, and a return:</p>
 <pre><code>def find_first_positive(values):
     for value in values:
         if value == 0:
@@ -364,7 +364,7 @@ except ValueError:
     return None
 
 find_first_positive([0, 2, 5, 1])</code></pre>
-<p>The question at every step is the same: <strong>at this point, what executes next, and why?</strong></p>
+<p>At every step, ask the same question: <strong>at this point, what executes next, and why?</strong></p>
 
 <div class="check open">
   <div class="qlabel">Trace it</div>
@@ -372,13 +372,13 @@ find_first_positive([0, 2, 5, 1])</code></pre>
   <button class="reveal-btn">Reveal answer</button>
   <div class="reveal-content"><strong>value = 0:</strong> matches <code>value == 0</code>, so <code>continue</code> skips straight to the next value. <strong>value = 2:</strong> <code>10 / 2 = 5.0</code>; <code>result &gt; 5</code> is False (5.0 is not greater than 5), so the loop continues. <strong>value = 5:</strong> <code>10 / 5 = 2.0</code>; still not &gt; 5, loop continues. <strong>value = 1:</strong> <code>10 / 1 = 10.0</code>; <code>10.0 &gt; 5</code> is True, so <code>return value</code> fires — returning <code>1</code>. The function never reaches its final <code>return None</code>.</div>
 </div>
-<p style="font-size:14px; color:var(--ink-soft);">Notice the <code>except ZeroDivisionError</code> never fires here — and structurally, it never could in this function, since <code>value == 0</code> is always caught by <code>continue</code> before the division ever runs. A handler being present doesn't mean it fires on every call. The next page traces a path where an exception genuinely does occur.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Notice that the <code>except ZeroDivisionError</code> never fires here — and structurally, it can't, because <code>value == 0</code> is caught by <code>continue</code> before the division ever runs. A handler being present doesn't mean it fires on every execution. The next page traces a path where an exception actually occurs.</p>
 </section>
 
 <section class="slide" id="slide-16">
 <div class="page-label">Page 16</div>
 <h2>Trace the Whole Execution Path: the Exceptional Path</h2>
-<p>A second, smaller example — this time the division by zero isn't filtered out first, so the exception path actually triggers:</p>
+<p>Here's a second, smaller example. This time the division by zero isn't filtered out first, so the exception path actually triggers:</p>
 <pre><code>def first_reciprocal_over(values, threshold):
     for value in values:
         try:
@@ -403,7 +403,7 @@ first_reciprocal_over([5, 0, 2], 3)</code></pre>
 <section class="slide" id="slide-17">
 <div class="page-label">Page 17</div>
 <h2>Control Flow in the Interpreter</h2>
-<div class="callout">What does an interpreter have to do differently for a conditional, loop, or exception than for an ordinary expression?</div>
+<div class="callout">So what does an interpreter have to do differently for a conditional, loop, or exception than for an ordinary expression?</div>
 <div class="lang-grid">
   <div class="lang-card"><h4>Conditional</h4>
     <div class="tree">AST: If<br>↓<br>evaluate condition<br>↓<br>choose branch<br>↓<br>evaluate selected branch</div>
@@ -415,13 +415,13 @@ first_reciprocal_over([5, 0, 2], 3)</code></pre>
 <div class="lang-card" style="margin-top:16px;"><h4>Exception</h4>
   <div class="tree">evaluation<br>↓<br>exception raised<br>↓<br>search for handler<br>↓<br>found → execute handler · not found → propagate</div>
 </div>
-<p style="font-size:14px; color:var(--ink-soft);">An ordinary expression evaluates once and produces a value. A conditional has to <em>choose</em> which AST subtree to evaluate at all. A loop has to evaluate the same subtree repeatedly, checking a condition each time. An exception has to unwind — abandon the normal evaluation sequence and go looking for somewhere else to resume. These are structurally different jobs for the evaluator, not just different syntax.</p>
+<p style="font-size:14px; color:var(--ink-soft);">An ordinary expression evaluates once and produces a value. A conditional has to <em>choose</em> which AST subtree to evaluate. A loop has to evaluate the same subtree repeatedly, checking a condition each time. An exception has to unwind — abandon the normal evaluation sequence and look for somewhere else to resume. These are structurally different jobs for the evaluator, not just different syntax.</p>
 </section>
 
 <section class="slide" id="slide-18">
 <div class="page-label">Page 18</div>
 <h2>Check Your Understanding</h2>
-<p style="font-size:14px; color:var(--ink-soft);">Eight questions that ask you to apply this topic's ideas. Not graded — just for you to check where things stand before moving on.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Eight questions to check whether you can apply the ideas from this topic. This isn't graded.</p>
 
 <div class="check" data-answer="2">
   <div class="qlabel">1 · Predict a branch</div>
@@ -457,7 +457,7 @@ first_reciprocal_over([5, 0, 2], 3)</code></pre>
   <div class="qlabel">5 · Exceptions as control flow</div>
   <div class="qtext">Why is it more accurate to call an exception a control-flow mechanism than to call it "an error message"?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">Because what it actually does is change which code executes next — interrupting the normal path and transferring control to a handler (or terminating the program if none exists). Displaying information about the error is a side effect of that; the mechanism itself is about execution path, exactly like a conditional or a loop.</div>
+  <div class="reveal-content">Because what it actually does is change which code executes next: it interrupts the normal path and transfers control to a handler, or terminates the program if no handler is found. Any error message is secondary; the mechanism itself is about execution path.</div>
 </div>
 
 <div class="check" data-answer="0" style="margin-top:16px;">
@@ -472,14 +472,14 @@ first_reciprocal_over([5, 0, 2], 3)</code></pre>
   <div class="qlabel">7 · Interpreter model — exceptions</div>
   <div class="qtext">When an interpreter's evaluation of an expression raises an exception, what does the interpreter do next?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">It abandons normal evaluation and searches outward for a handler — checking the current try block, then the caller's, and so on, propagating through the chain of call environments until a matching handler is found, or there's nowhere left to look and the exception terminates the program.</div>
+  <div class="reveal-content">It abandons normal evaluation and searches outward for a handler, moving through the active call chain until a matching handler is found. If there is nowhere left to look, the exception terminates the program.</div>
 </div>
 
 <div class="check open" style="margin-top:16px;">
   <div class="qlabel">8 · Boundary with Topic 4</div>
   <div class="qtext"><code>x != 0 and 10 / x > 2</code> — Topic 4 already explained why the second operand might not be evaluated. What does Topic 8 add to that same example?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">Topic 4's focus was evaluation: whether the second operand gets evaluated at all. Topic 8's focus is execution path: what that skipped evaluation actually means for the program — namely, that the division by x never happens when x is 0, which is exactly why this pattern is used to avoid a ZeroDivisionError in the first place.</div>
+  <div class="reveal-content">Topic 4's focus was evaluation: whether the second operand gets evaluated at all. Topic 8's focus is execution path: what that means for the program. When <code>x</code> is 0, the division never happens, which is why this pattern avoids a <code>ZeroDivisionError</code>.</div>
 </div>
 
 <div class="qbox" style="margin-top:24px;">

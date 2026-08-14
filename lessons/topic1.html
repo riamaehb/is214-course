@@ -28,8 +28,8 @@
     <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
   </div>
 </div>
-<p>Every program you write is written in some language — but why does that language look the way it does, and why are there so many of them? This topic starts there.</p>
-<p>You'll meet the fundamental concepts you'll use throughout IS 214: programming-language paradigms, language classification, language evaluation, compilation and interpretation, and the basic stages a program goes through on its way to running.</p>
+<p>Every program you write is written in some language. But why does that language look the way it does? And why are there so many different languages in the first place?</p>
+<p>That's where we start. We'll look at programming-language paradigms, how languages can be classified and evaluated, compilation and interpretation, and the basic stages a program goes through before it runs.</p>
 <h3 style="font-size:18px; margin:32px 0 14px;">By the end of this lesson, you should be able to</h3>
 <ul>
   <li>explain what a programming language is;</li>
@@ -47,7 +47,7 @@
 <section class="slide" id="slide-1">
 <div class="page-label">Page 1</div>
 <h2>What Is a Programming Language?</h2>
-<p>A programming language provides a <strong>formal way to describe computation</strong>. It defines what can be written, how those elements can be combined, and what those constructions mean when executed.</p>
+<p>A programming language gives us a <strong>formal way to describe computation</strong>. It tells us what we can write, how those pieces can be put together, and what those constructions mean when the program runs.</p>
 <div class="diagram">
   <div class="flow-box">PROGRAMMING LANGUAGE</div>
   <div class="flow-arrow">↓</div>
@@ -66,7 +66,7 @@
     </div>
   </div>
 </div>
-<p><strong>Syntax</strong> determines what constitutes a valid program. <strong>Semantics</strong> describes what valid programs mean. <strong>Execution</strong> is one way in which that meaning is realized — not a third, equal ingredient alongside syntax and semantics, but a consequence of them. Hold onto that distinction; you'll need it once you get to interpreters.</p>
+<p><strong>Syntax</strong> tells us whether a program is structurally valid. <strong>Semantics</strong> tells us what a valid program means. <strong>Execution</strong> is one way that meaning gets carried out — it isn't a third ingredient alongside syntax and semantics. Keep that distinction in mind; it will matter when we get to interpreters.</p>
 
 <h3 style="font-size:17px; margin:28px 0 10px;">A worked example</h3>
 <pre><code>total = price * quantity</code></pre>
@@ -94,7 +94,7 @@
 <section class="slide" id="slide-2">
 <div class="page-label">Page 2</div>
 <h2>One Computation, Many Languages</h2>
-<p>Here's the same computation — print "Hello, World!" — written four different ways.</p>
+<p>Let's take the same simple computation — printing <code>"Hello, World!"</code> — and write it in four different languages.</p>
 <div class="lang-grid">
   <div class="lang-card"><h4>Assembly</h4><p>Low-level, explicit interaction with machine-oriented operations.</p><pre><code>mov ah, 9
 mov dx, offset msg
@@ -108,7 +108,7 @@ int 21h</code></pre></div>
   (display "Hello, World!"))</code></pre></div>
   <div class="lang-card"><h4>Python</h4><p>Compact, high-level syntax.</p><pre><code>print("Hello, World!")</code></pre></div>
 </div>
-<p>Notice that the computation itself hasn't changed — only how it's expressed. That's not accidental. Programming languages make different choices about syntax, abstraction, computation models, and program organization.</p>
+<p>The computation hasn't changed. What changed is how we chose to express it. That's the interesting part: programming languages make different choices about syntax, abstraction, computation, and how programs are organized.</p>
 
 <div class="check open">
   <div class="qlabel">Think about it</div>
@@ -121,7 +121,7 @@ int 21h</code></pre></div>
 <section class="slide" id="slide-3">
 <div class="page-label">Page 3</div>
 <h2>Why Are There So Many Programming Languages?</h2>
-<p>Is there one language that's ideal for every problem? No — language design is shaped by competing goals:</p>
+<p>So why not just have one language that does everything? Because language design involves competing goals:</p>
 <ul>
   <li>readability</li>
   <li>writability</li>
@@ -133,7 +133,7 @@ int 21h</code></pre></div>
   <li>application domain</li>
 </ul>
 <div class="callout">Programming-language design involves trade-offs.</div>
-<p>A language might give you more control over memory and hardware for performance — but that can make programs harder to write safely. Another language might offer more abstraction and automatic memory management instead. Development gets easier; you get less direct control.</p>
+<p>A language might give you more direct control over memory and hardware, which can be useful for performance — but that control also gives you more ways to make mistakes. Another language might give you more abstraction and automatic memory management. That can make development easier, but you give up some direct control in return.</p>
 
 <div class="check open">
   <div class="qlabel">Think about it</div>
@@ -146,7 +146,7 @@ int 21h</code></pre></div>
 <section class="slide" id="slide-4">
 <div class="page-label">Page 4</div>
 <h2>What Is a Programming Paradigm?</h2>
-<p>A programming paradigm is a way of organizing and expressing computation. It shapes how you think about a problem and how you structure your programs — not just the syntax you type.</p>
+<p>A programming paradigm is a way of organizing and expressing computation. It influences how you approach a problem and how you structure the program — not just what syntax you type.</p>
 <p>Paradigms are usually grouped into a few broad families:</p>
 <ul>
   <li><strong>Imperative</strong> — describe a sequence of steps that change program state</li>
@@ -155,7 +155,7 @@ int 21h</code></pre></div>
   <li><strong>Logic</strong> — express facts and rules, and let the language derive conclusions</li>
   <li><strong>Declarative</strong> — describe what result is wanted, rather than the steps to get there</li>
 </ul>
-<p>These are not mutually exclusive — a single language, including Python, can support several of them. The next two pages look closely at the two broadest categories: <strong>imperative</strong> and <strong>declarative</strong>.</p>
+<p>These categories aren't mutually exclusive. A single language, including Python, can support several paradigms. Let's start with two broad ways of thinking about computation: <strong>imperative</strong> and <strong>declarative</strong>.</p>
 </section>
 
 <section class="slide" id="slide-5">
@@ -175,7 +175,7 @@ for x in numbers:
     …
   </div>
 </div>
-<p>Notice how the program explicitly describes each operation and each change to program state, step by step. That's the defining trait of imperative programming — the code is a trace of <em>how</em> the answer gets built up.</p>
+<p>Notice what the code is doing: it spells out the operations and the changes to <code>total</code>, one step at a time. That's the key idea behind imperative programming — the program describes <em>how</em> the computation is carried out.</p>
 
 <div class="check" data-answer="2">
   <div class="qlabel">Check your understanding</div>
@@ -191,11 +191,11 @@ for x in numbers:
 <section class="slide" id="slide-6">
 <div class="page-label">Page 6</div>
 <h2>Declarative Programming</h2>
-<p>Declarative programming emphasizes <strong>what</strong> result or relationship is wanted, rather than specifying every step. For example, SQL:</p>
+<p>Declarative programming emphasizes <strong>what</strong> result or relationship we want, rather than spelling out every step. SQL is a familiar example:</p>
 <pre><code>SELECT name
 FROM students
 WHERE grade >= 1.5;</code></pre>
-<p>You don't tell the database to scan this block, then compare this row, then move to the next. You describe <strong>what data you want</strong>, and the database figures out how to get it.</p>
+<p>You don't tell the database exactly how to scan the table, compare each row, and move through the data. You describe <strong>what data you want</strong>, and the database decides how to get it.</p>
 <table>
   <tr><th>Imperative</th><td>"What steps should be performed?"</td></tr>
   <tr><th>Declarative</th><td>"What result do I want?"</td></tr>
@@ -214,7 +214,7 @@ for x in numbers:
 <pre><code>total = sum(numbers)</code></pre>
 <p>Both are Python programs, and both compute the sum. The first explicitly describes the iteration and state updates. The second uses a <strong>higher-level abstraction</strong>: the iteration is still happening, but <code>sum()</code> handles it internally rather than asking you to write it out.</p>
 <div class="callout">Abstraction allows programmers to express computations without specifying every implementation detail.</div>
-<p style="font-size:14px; color:var(--ink-soft);">It's tempting to call the second version "declarative" — but that's not quite right either. It's still telling Python what to do; it's just doing so at a higher level. Abstraction and paradigm are related ideas, but they're not the same thing.</p>
+<p style="font-size:14px; color:var(--ink-soft);">It might be tempting to call the second version "declarative," but that isn't quite right. It's still telling Python what to do; it's just doing so at a higher level. <strong>Abstraction</strong> and <strong>paradigm</strong> are related, but they're not the same thing.</p>
 <div class="diagram">
   <div class="flow-row">
     <div style="text-align:center;">
@@ -239,7 +239,7 @@ for x in numbers:
 <section class="slide" id="slide-8">
 <div class="page-label">Page 8</div>
 <h2>Classifying Programming Languages</h2>
-<p>A language can be classified in several ways at the same time:</p>
+<p>There isn't just one way to classify a programming language. We can look at it along several dimensions:</p>
 <table>
   <tr><th>Dimension</th><th>Examples</th></tr>
   <tr><td>Abstraction</td><td>Low-level / High-level</td></tr>
@@ -284,7 +284,7 @@ for x in numbers:
 <section class="slide" id="slide-10">
 <div class="page-label">Page 10</div>
 <h2>Compilation and Interpretation</h2>
-<p>So far, you've seen how languages are designed. Now: how do programs actually get executed?</p>
+<p>So far, we've been talking about how languages are designed. Now let's ask the next question: <strong>how does a program actually get executed?</strong></p>
 <h3 style="font-size:17px; margin:24px 0 8px;">Compilation</h3>
 <p>A compiler translates a program into another representation before execution.</p>
 <div class="diagram"><div class="flow">
@@ -294,14 +294,14 @@ for x in numbers:
   <div class="flow-box">Execution</div>
 </div></div>
 <h3 style="font-size:17px; margin:24px 0 8px;">Interpretation</h3>
-<p>An interpreter executes a program by processing it during execution.</p>
+<p>An interpreter executes a program by processing a representation of the program and carrying out the operations it describes.</p>
 <div class="diagram"><div class="flow">
   <div class="flow-box">Source / representation</div><div class="flow-arrow">↓</div>
   <div class="flow-box process">Interpreter</div><div class="flow-arrow">↓</div>
   <div class="flow-box">Execution</div>
 </div></div>
-<p>The compiled-vs-interpreted distinction is useful for understanding basic implementation approaches. Real language implementations, though, are often more complicated than either model on its own.</p>
-<p style="font-size:14px; color:var(--ink-soft);">We will later examine how Python's actual execution process combines several ideas introduced here — that's Topic 10.</p>
+<p>The compiled-versus-interpreted distinction is useful as a starting point, but real language implementations are often more complicated than either of these simple pictures.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Later, in Topic 10, we'll look at how Python's execution process combines several of these ideas.</p>
 </section>
 
 <section class="slide" id="slide-11">
@@ -332,7 +332,7 @@ for x in numbers:
     <div class="artifact">TARGET CODE</div>
   </div>
 </div>
-<p>You'll study each of these stages in detail later in the course. For now, just notice this: running a program involves multiple stages of analysis and transformation. It isn't magic.</p>
+<p>We won't unpack every stage yet. For now, the important thing is that running a program involves several stages of analysis and transformation. There is a process behind it.</p>
 </section>
 
 <section class="slide" id="slide-12">
@@ -363,7 +363,7 @@ for x in numbers:
   <tr><th style="color:var(--syntax);">Syntax analysis</th><td>How are the pieces structured?</td></tr>
   <tr><th style="color:var(--semantics);">Semantic analysis</th><td>Does the structure make sense according to the language's rules?</td></tr>
 </table>
-<p style="font-size:14px; color:var(--ink-soft);">This is the perfect bridge into Topic 2, where you'll start building each of these pieces yourself.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This is where Topic 2 begins: we'll start with the first of these pieces and look at how source characters become tokens.</p>
 </section>
 
 <section class="slide" id="slide-13">
@@ -374,7 +374,7 @@ for x in numbers:
   <tr><th style="color:var(--syntax);">Syntax</th><td>The tokens do not form a valid program structure.</td></tr>
   <tr><th style="color:var(--semantics);">Semantic</th><td>The structure is valid, but the program violates a rule about meaning or execution.</td></tr>
 </table>
-<p>Try classifying each example before checking the answer.</p>
+<p>Before you reveal the answer, try to identify <strong>where in the process the problem occurs</strong>.</p>
 
 <div class="check" data-answer="0">
   <div class="qlabel">Example 1</div>
@@ -453,7 +453,7 @@ for x in numbers:
 <section class="slide" id="slide-15">
 <div class="page-label">Summary</div>
 <h2>The Big Picture</h2>
-<p>This topic's whole arc, in one chain:</p>
+<p>Here's the whole topic in one chain:</p>
 <div class="diagram">
 <div class="pipeline">
 <div class="artifact">PROGRAMMING LANGUAGE</div><div class="arr">↓</div>

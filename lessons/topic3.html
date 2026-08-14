@@ -26,7 +26,7 @@
 <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
 </div>
 </div>
-<p>We have a stream of tokens. How do we determine their structure?</p>
+<p>We have a stream of tokens. Now what? How do we figure out how those pieces fit together?</p>
 <div class="diagram">
 <div class="pipeline">
 <div class="artifact">TOKENS + GRAMMAR</div><div class="arr">↓</div>
@@ -37,7 +37,7 @@
 <div class="artifact">INTERPRETER-READY STRUCTURE</div>
 </div>
 </div>
-<p>This topic follows one expression, <code>x = a + b * c</code>, through every one of these stages. By the end, all of these ideas — grammar, derivation, parse tree, AST, parser — should feel like different views of the same thing, not a pile of separate vocabulary.</p>
+<p>We'll use one expression, <code>x = a + b * c</code>, throughout this topic. The goal is for grammar, derivation, parse tree, AST, and parser to feel like different views of the same problem, rather than a pile of vocabulary to memorize.</p>
 <h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
 <ul>
 <li>explain what a grammar is and read BNF-style production rules;</li>
@@ -54,19 +54,19 @@
 <section class="slide" id="slide-1">
 <div class="page-label">Page 1</div>
 <h2>From Tokens to Structure</h2>
-<p>Topic 2 left us with a token stream. For <code>x = a + b * c</code>:</p>
+<p>Topic 2 left us with a token stream. Let's use our running example again: <code>x = a + b * c</code></p>
 <div class="token-row">
 <span class="token">IDENTIFIER</span><span class="token">ASSIGN</span><span class="token">IDENTIFIER</span><span class="token">PLUS</span><span class="token">IDENTIFIER</span><span class="token">MULTIPLY</span><span class="token">IDENTIFIER</span>
 </div>
-<p>We know what each piece <em>is</em>. But how do we know how these pieces are <em>related</em>? We need to know that this means <code>x</code> gets assigned the result of adding <code>a</code> to the product of <code>b</code> and <code>c</code> — not some other arrangement.</p>
-<p>That's the motivation for this entire topic: <strong>syntax analysis</strong>, or parsing — detecting whether a token sequence is valid, and constructing the structure it represents.</p>
+<p>We know what each piece <em>is</em>. But we don't yet know how the pieces are <em>related</em>. Does this mean <code>x</code> gets the result of adding <code>a</code> to the product of <code>b</code> and <code>c</code>? Or could the tokens be grouped another way?</p>
+<p>That's the problem this topic is about: <strong>syntax analysis</strong>, or parsing. We want to know whether a token sequence is valid and, if it is, what structure it represents.</p>
 </section>
 <section class="slide" id="slide-2">
 <div class="page-label">Page 2</div>
 <h2>What Is a Grammar?</h2>
 <div class="callout">A grammar is a set of rules that describes how valid programs can be constructed.</div>
-<p>Just like Topic 2's tokens gave the parser something more useful than raw characters, a grammar gives us something more precise than "arrange the tokens so it looks right." It's a formal, checkable definition of structure.</p>
-<p>We'll build one up slowly, a few pieces at a time — not throw a giant grammar at you all at once.</p>
+<p>Just as Topic 2 turned raw characters into something more useful with tokens, a grammar gives us something more precise than "arrange these tokens so they look right." It gives us a formal, checkable description of valid structure.</p>
+<p>We'll build one up slowly, a few pieces at a time. No giant grammar dump.</p>
 </section>
 <section class="slide" id="slide-3">
 <div class="page-label">Page 3</div>
@@ -80,12 +80,12 @@
 <tr><td><code>&lt;assignment&gt;</code></td><td>start symbol — where every derivation begins</td></tr>
 <tr><td>each full line</td><td>a production rule</td></tr>
 </table>
-<p style="font-size:14px; color:var(--ink-soft);">Same vocabulary as before — terminal, non-terminal, production, start symbol — just applied to the assignment language we'll use throughout this topic.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Same vocabulary as before — terminal, non-terminal, production, start symbol — now applied to the small language we'll use throughout this topic.</p>
 </section>
 <section class="slide" id="slide-4">
 <div class="page-label">Page 4</div>
 <h2>Reading Production Rules</h2>
-<p>Let's read one carefully:</p>
+<p>Let's slow down and read one carefully:</p>
 <pre><code>&lt;expr&gt; ::= &lt;term&gt; + &lt;term&gt;</code></pre>
 <ul>
 <li><code>&lt;expr&gt;</code> is a non-terminal;</li>
@@ -96,7 +96,7 @@
 </ul>
 <pre><code>&lt;expr&gt; ::= &lt;term&gt;
        | &lt;term&gt; + &lt;term&gt;</code></pre>
-<p>The <code>|</code> introduces an alternative — an <code>&lt;expr&gt;</code> can take either form.</p>
+<p>The <code>|</code> introduces an alternative: an <code>&lt;expr&gt;</code> can take either form.</p>
 <div class="check" data-answer="1">
 <div class="qlabel">Check your understanding</div>
 <div class="qtext">In <code>&lt;expr&gt; ::= &lt;id&gt; | &lt;id&gt; + &lt;id&gt;</code>, what is <code>&lt;id&gt;</code>?</div>
@@ -109,11 +109,11 @@
 <section class="slide" id="slide-4b">
 <div class="page-label">Page 5</div>
 <h2>Why Grammars? What Regular Expressions Can't Do</h2>
-<p>Topic 2's lexer worked because token patterns don't nest — identifiers, integers, operators are all flat. A regular expression has no memory of "how deep am I." It can check a fixed pattern. It can't count.</p>
-<p>Program structure isn't flat, though. It nests:</p>
+<p>Topic 2's lexer worked because the token patterns we were recognizing don't need arbitrary nesting. Identifiers, integers, and operators are essentially flat. A regular expression can recognize those patterns, but it doesn't have a way to remember "how deep am I?"</p>
+<p>Program structure is different. It nests:</p>
 <pre><code>((a + b) * (c + d))</code></pre>
-<p>Parentheses have to balance at whatever depth a programmer chooses. Could you write one regular expression that handles every possible depth? You can't — depth 1 needs one pattern, depth 2 needs another, and there's no single fixed pattern that covers them all at once.</p>
-<p>This is exactly what a grammar gives you that a regular expression can't: a production rule is allowed to refer to itself.</p>
+<p>Parentheses have to balance at whatever depth the programmer chooses. Could one fixed regular expression handle every possible depth? No. You would need to account for depth 1, depth 2, depth 3, and so on — with no fixed limit.</p>
+<p>This is where a grammar gives us something a regular expression can't: a production rule can refer to itself.</p>
 <div class="diagram" style="text-align:left;">
 <div class="tree">
     &lt;expr&gt; ::= &lt;id&gt;<br/>
@@ -121,10 +121,10 @@
         | &lt;expr&gt; + &lt;expr&gt;
   </div>
 </div>
-<p>Notice that <code>&lt;expr&gt;</code> appears inside its own definition. That single rule can expand as many times as you need — one level of nesting, or twenty — with no separate rule required for each depth.</p>
-<div class="callout">Grammars can describe recursive structure. Regular expressions can't.</div>
+<p>Notice that <code>&lt;expr&gt;</code> appears inside its own definition. That means the rule can keep expanding: one level of nesting, twenty levels, or however many the input needs. We don't need a separate rule for every possible depth.</p>
+<div class="callout">Grammars can describe recursive structure. Regular expressions, in the sense we're using here, cannot.</div>
 <p>Grammars with this kind of self-referencing rule are called <strong>context-free grammars (CFGs)</strong>. Every grammar you'll see in this course is context-free — it's the standard tool for specifying programming-language syntax. And regular languages, from Topic 2, turn out to be a subset of what CFGs can describe: everything a regular expression can match, a grammar can too, but not the other way around.</p>
-<p>One more boundary worth knowing now: a context-free grammar checks structure, not meaning. It can guarantee <code>x = a + b * c</code> is shaped like a valid assignment. It can't tell you whether <code>a</code> was ever defined, or whether adding <code>a</code> and <code>b</code> even makes sense. That's what Topic 4 picks up.</p>
+<p>There's one important boundary to keep in mind. A context-free grammar checks structure, not meaning. It can tell us that <code>x = a + b * c</code> has the shape of a valid assignment. It can't tell us whether <code>a</code> was ever defined, or whether adding <code>a</code> and <code>b</code> makes sense. We'll pick that up in Topic 4.</p>
 <div class="check" data-answer="1">
 <div class="qlabel">Check your understanding</div>
 <div class="qtext">Why can't a regular expression alone check that parentheses are balanced, no matter how it's written?</div>
@@ -137,25 +137,25 @@
 <section class="slide" id="slide-5">
 <div class="page-label">Page 6</div>
 <h2>A Small Programming Language</h2>
-<p>Let's build a grammar that can generate our running example, <code>x = a + b * c</code>:</p>
+<p>Let's build a small grammar for our running example, <code>x = a + b * c</code>:</p>
 <pre><code>&lt;assignment&gt; ::= &lt;id&gt; = &lt;expr&gt;
 &lt;expr&gt;       ::= &lt;expr&gt; + &lt;expr&gt;
              | &lt;expr&gt; * &lt;expr&gt;
              | &lt;id&gt;
 &lt;id&gt;         ::= a | b | c | x</code></pre>
-<p>This is enough to generate assignments involving addition and multiplication of our four identifiers. We'll use exactly this grammar for the next several pages.</p>
-<p style="font-size:14px; color:var(--ink-soft);">It looks complete — but it has a hidden problem we'll discover in a few pages.</p>
+<p>This is enough to generate assignments involving addition and multiplication of our four identifiers. We'll keep using this grammar for the next several pages.</p>
+<p style="font-size:14px; color:var(--ink-soft);">It looks reasonable. But it has a hidden problem, and we'll find it in a few pages.</p>
 </section>
 <section class="slide" id="slide-6">
 <div class="page-label">Page 7</div>
 <h2>Derivations</h2>
-<p>A <strong>derivation</strong> is a sequence of steps, starting from the start symbol, where at each step one non-terminal is replaced by the right-hand side of one of its productions — the same idea from Topic 2's grammar preview, now with a grammar big enough to be genuinely useful.</p>
-<p>A derivation proves a string belongs to the language the grammar defines: step by step, from <code>&lt;assignment&gt;</code> down to actual characters.</p>
+<p>A <strong>derivation</strong> is a sequence of steps that starts at the start symbol. At each step, we replace one non-terminal with the right-hand side of one of its productions. It's the same basic idea we previewed earlier, now with a grammar large enough to do something useful.</p>
+<p>A derivation gives us a step-by-step way to show that a string belongs to the language defined by the grammar — from <code>&lt;assignment&gt;</code> all the way down to actual symbols.</p>
 </section>
 <section class="slide" id="slide-7">
 <div class="page-label">Page 8</div>
 <h2>A Worked Derivation</h2>
-<p>Let's derive <code>x = a + b * c</code>, one step at a time.</p>
+<p>Let's derive <code>x = a + b * c</code> one step at a time.</p>
 <div class="diagram" style="text-align:left;">
 <div class="tree">
     &lt;assignment&gt;<br/>
@@ -181,12 +181,12 @@
     ⇒ x = a + b * c
   </div>
 </div>
-<p>We've generated a sentence belonging to the language defined by the grammar — proof, step by step, that <code>x = a + b * c</code> is valid.</p>
+<p>We've generated a sentence in the language defined by the grammar. In other words, we've shown step by step that <code>x = a + b * c</code> is valid according to this grammar.</p>
 </section>
 <section class="slide" id="slide-8">
 <div class="page-label">Page 9</div>
 <h2>Parse Trees</h2>
-<p>The same derivation, shown as structure instead of steps:</p>
+<p>Now let's look at that same derivation as a structure rather than as a sequence of steps:</p>
 <div class="diagram" style="text-align:left;">
 <div class="tree">
 <span class="t1">&lt;assignment&gt;</span><br/>
@@ -201,19 +201,19 @@
             └── &lt;expr&gt; → c
   </div>
 </div>
-<p>The root is the start symbol. Interior nodes are non-terminals; leaves are terminals. Read the leaves left to right, and you get back <code>x = a + b * c</code>.</p>
+<p>The root is the start symbol. The interior nodes are non-terminals, and the leaves are terminals. Read the leaves from left to right and you get <code>x = a + b * c</code> back.</p>
 </section>
 <section class="slide" id="slide-9">
 <div class="page-label">Page 10</div>
 <h2>From Derivation to Parse Tree</h2>
 <div class="callout">A derivation shows the steps used to generate a sentence. A parse tree shows the structure of the resulting sentence.</div>
-<p>Same information, two different views — a process versus a shape. Both prove the same thing: that <code>x = a + b * c</code> legally belongs to the language our grammar defines.</p>
-<p>But look closely at the tree on the last page. Is <code>b * c</code> really forced to group together before the addition happens — or could our grammar have built this a different way?</p>
+<p>Same information, two views: a derivation shows the process; a parse tree shows the resulting shape. Both tell us that <code>x = a + b * c</code> belongs to the language defined by the grammar.</p>
+<p>But there's a problem hiding in that tree. Is <code>b * c</code> really forced to happen before the addition? Or could the grammar build a different structure for the same expression?</p>
 </section>
 <section class="slide" id="slide-10">
 <div class="page-label">Page 11</div>
 <h2>Ambiguous Grammars</h2>
-<p>Here's our grammar's hidden problem. It also allows this derivation for the same expression <code>a + b * c</code>:</p>
+<p>Here's the problem. Our grammar also allows a different structure for the same expression, <code>a + b * c</code>:</p>
 <div class="lang-grid">
 <div class="lang-card"><h4>Tree 1 (what we built)</h4>
 <div class="tree">
@@ -234,7 +234,7 @@
     </div>
 </div>
 </div>
-<p>A grammar is <strong>ambiguous</strong> if some sentence it generates has two or more genuinely different parse trees — and ours does. Nothing in the grammar itself says <code>*</code> should bind tighter than <code>+</code>; both trees are equally legal derivations of the same string.</p>
+<p>A grammar is <strong>ambiguous</strong> if some sentence it generates has two or more different parse trees. Ours does. Nothing in this grammar says that <code>*</code> should bind more tightly than <code>+</code>, so both trees are legal.</p>
 <div class="check open">
 <div class="qlabel">Think about it</div>
 <div class="qtext">Why is this a problem?</div>
@@ -245,7 +245,7 @@
 <section class="slide" id="slide-11">
 <div class="page-label">Page 12</div>
 <h2>Operator Precedence</h2>
-<p>The fix: rewrite the grammar so addition and multiplication live at different levels.</p>
+<p>So how do we fix it? We rewrite the grammar so addition and multiplication live at different levels.</p>
 <pre><code>&lt;expr&gt; ::= &lt;term&gt;   | &lt;expr&gt; + &lt;term&gt;
 &lt;term&gt; ::= &lt;id&gt;     | &lt;term&gt; * &lt;id&gt;</code></pre>
 <div class="diagram">
@@ -255,20 +255,20 @@
 <div class="flow-box">term</div>
 </div>
 </div>
-<p>Because multiplication is handled at the <code>&lt;term&gt;</code> level, nested one layer below <code>&lt;expr&gt;</code> where addition lives, there is now exactly <strong>one parse structure</strong> for <code>x = a + b * c</code>: Tree 1 from the last page, never Tree 2.</p>
+<p>Multiplication is handled at the <code>&lt;term&gt;</code> level, one level below the <code>&lt;expr&gt;</code> level where addition lives. That structure forces <code>b * c</code> to form first, so <code>x = a + b * c</code> has exactly <strong>one parse structure</strong> here: Tree 1, not Tree 2.</p>
 <div class="callout">Grammar structure can encode operator precedence.</div>
-<p style="font-size:14px; color:var(--ink-soft);">This is much more useful than just being told "multiplication has higher precedence" — you now understand <em>how</em> a grammar can enforce that fact by construction.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This is more useful than simply memorizing that "multiplication has higher precedence." You can now see <em>how</em> the grammar enforces that relationship.</p>
 </section>
 <section class="slide" id="slide-12">
 <div class="page-label">Page 13</div>
 <h2>Associativity</h2>
-<p>Precedence resolves conflicts between <em>different</em> operators. What about the same operator, repeated?</p>
+<p>Precedence handles conflicts between <em>different</em> operators. What happens when the same operator appears repeatedly?</p>
 <pre><code>a - b - c</code></pre>
 <div class="lang-grid">
 <div class="lang-card"><h4>Left-associative</h4><pre><code>(a - b) - c</code></pre></div>
 <div class="lang-card"><h4>Right-associative</h4><pre><code>a - (b - c)</code></pre></div>
 </div>
-<p>These give different results — and just like precedence, the grammar decides which one is derivable. A left-recursive rule like <code>&lt;expr&gt; ::= &lt;expr&gt; - &lt;term&gt;</code> forces left-associativity.</p>
+<p>These group the operations differently, and they can produce different results. Just like precedence, the grammar can determine which grouping is allowed. A left-recursive rule such as <code>&lt;expr&gt; ::= &lt;expr&gt; - &lt;term&gt;</code> gives left-associative grouping.</p>
 <div class="callout">Precedence determines which operators bind more strongly. Associativity determines how operators of the same precedence are grouped.</div>
 </section>
 <section class="slide" id="slide-13">
@@ -281,13 +281,13 @@
 <tr><td>Closely follows grammar rules</td><td>Designed for later processing</td></tr>
 <tr><td>Useful for understanding parsing</td><td>Useful for interpretation/compilation</td></tr>
 </table>
-<p>A parse tree represents the grammar in detail — every <code>&lt;expr&gt;</code>, every <code>&lt;term&gt;</code>. An <strong>abstract syntax tree</strong> keeps only the structural information needed to understand or execute the program.</p>
-<p>Take <code>(x + y)</code>: a parse tree may contain explicit nodes for the parentheses themselves. An AST generally doesn't need a "parentheses" node at all — the tree's shape already captures the grouping without needing to record how it was written.</p>
+<p>A parse tree represents the grammar in detail — including all those <code>&lt;expr&gt;</code> and <code>&lt;term&gt;</code> nodes. An <strong>abstract syntax tree</strong>, or AST, keeps the structural information that matters for later processing.</p>
+<p>For example, take <code>(x + y)</code>. A parse tree may represent the parentheses explicitly because they appear in the grammar. An AST generally doesn't need a separate "parentheses" node; the tree structure already captures the grouping.</p>
 </section>
 <section class="slide" id="slide-14">
 <div class="page-label">Page 15</div>
 <h2>Building an AST</h2>
-<p>Take our fixed parse tree for <code>x = a + b * c</code> and strip it down to what actually matters for evaluation:</p>
+<p>Let's take the parse tree for <code>x = a + b * c</code> and strip away the pieces that only helped the grammar express the syntax. What do we actually need for evaluation?</p>
 <div class="lang-grid">
 <div class="lang-card"><h4>Parse tree</h4>
 <div class="tree">
@@ -315,21 +315,21 @@
     </div>
 </div>
 </div>
-<p>Gone: the <code>&lt;expr&gt;</code>/<code>&lt;term&gt;</code> scaffolding that only existed to encode precedence, and the literal <code>=</code> token. What's left: exactly the information needed to evaluate the expression — an assignment, an addition, a multiplication, and the identifiers involved.</p>
-<div class="callout">The interpreter doesn't want to evaluate a giant grammar tree full of &lt;expr&gt;, &lt;term&gt;, and &lt;factor&gt; nodes. It wants the AST.</div>
-<p style="font-size:14px; color:var(--ink-soft);">This is the exact structure we'll eventually evaluate when we build the interpreter.</p>
+<p>Gone are the <code>&lt;expr&gt;</code>/<code>&lt;term&gt;</code> nodes that were mainly there to encode precedence, along with the literal <code>=</code> token. What's left is the information we actually need: an assignment, an addition, a multiplication, and the identifiers involved.</p>
+<div class="callout">The interpreter doesn't need to walk a grammar tree full of <code>&lt;expr&gt;</code>, <code>&lt;term&gt;</code>, and <code>&lt;factor&gt;</code> scaffolding. It wants the AST.</div>
+<p style="font-size:14px; color:var(--ink-soft);">This is the kind of structure we'll eventually evaluate when we build the interpreter.</p>
 </section>
 <section class="slide" id="slide-15">
 <div class="page-label">Page 16</div>
 <h2>What Is Parsing?</h2>
-<p>Now that we've built the pieces by hand, we can name the whole process:</p>
+<p>We've built the pieces by hand. Now we can name the whole process:</p>
 <div class="callout">Parsing is the process of analyzing a token sequence according to a grammar and constructing its syntactic structure.</div>
 <div class="diagram"><div class="flow">
 <div class="flow-box">Token stream</div><div class="flow-arrow">↓</div>
 <div class="flow-box process">Parser</div><div class="flow-arrow">↓</div>
 <div class="flow-box">Parse tree / AST</div>
 </div></div>
-<p style="font-size:14px; color:var(--ink-soft);">This is Topic 2's final diagram, arriving at Topic 3's opening reality — the parser is the thing that actually does everything we've been doing by hand these past several pages.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This is where the pieces come together: the parser is the part of the language implementation that does the work we've been doing by hand.</p>
 </section>
 <section class="slide" id="slide-16">
 <div class="page-label">Page 17</div>
@@ -338,15 +338,15 @@
 <div class="lang-card"><h4>Top-down</h4><p>Starts from the root (the start symbol) and constructs the tree downward, toward the input tokens.</p></div>
 <div class="lang-card"><h4>Bottom-up</h4><p>Starts from the input tokens and constructs the tree upward, toward the start symbol.</p></div>
 </div>
-<p style="font-size:14px; color:var(--ink-soft);">Bottom-up parsers (the LR family is the best-known example) are an important part of the parsing landscape, but we won't implement one in this course — the interpreter we build uses a top-down, <strong>recursive-descent</strong> approach instead. That's what the rest of this topic is about.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Bottom-up parsers, including the LR family, are important in practice, but we won't implement one in this course. Our interpreter will use a top-down, <strong>recursive-descent</strong> approach. That's what we'll focus on next.</p>
 </section>
 <section class="slide" id="slide-17">
 <div class="page-label">Page 18</div>
 <h2>Recursive Descent</h2>
-<p>Recall our precedence-fixed grammar from Page 11:</p>
+<p>Let's return to the precedence-aware grammar from earlier:</p>
 <pre><code>&lt;expr&gt; ::= &lt;term&gt; | &lt;expr&gt; + &lt;term&gt;
 &lt;term&gt; ::= &lt;id&gt;   | &lt;term&gt; * &lt;id&gt;</code></pre>
-<p>One small addition first: a <code>&lt;factor&gt;</code> level, so parentheses have somewhere to live.</p>
+<p>First, we'll add one small piece: a <code>&lt;factor&gt;</code> level so parentheses have somewhere to go.</p>
 <pre><code>&lt;expr&gt;   ::= &lt;term&gt;   | &lt;expr&gt; + &lt;term&gt;
 &lt;term&gt;   ::= &lt;factor&gt; | &lt;term&gt; * &lt;factor&gt;
 &lt;factor&gt; ::= &lt;id&gt;     | ( &lt;expr&gt; )</code></pre>
@@ -361,12 +361,12 @@
 </div>
 </div>
 <div class="callout">The grammar can directly guide the structure of the parser.</div>
-<p style="font-size:14px; color:var(--ink-soft);">Each production rule becomes a function. Each alternative becomes a branch inside that function. Once you see this, the whole idea of "writing a parser" stops being mysterious — you're translating a grammar you already know how to read into code.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Each production rule maps naturally to a function, and the alternatives become branches inside that function. Once you see that connection, "writing a parser" becomes much less mysterious: you're translating a grammar you already know how to read into code.</p>
 </section>
 <section class="slide" id="slide-18">
 <div class="page-label">Page 19</div>
 <h2>Building the Parser</h2>
-<p>Here's what <code>parse_expr</code> looks like, following our grammar directly:</p>
+<p>Here's what <code>parse_expr</code> looks like when we translate that grammar into code:</p>
 <pre><code>def parse_expr():
     left = parse_term()
     while current_token == PLUS:
@@ -374,20 +374,20 @@
         right = parse_term()
         left = BinaryOp('+', left, right)
     return left</code></pre>
-<p>Notice it builds a <code>BinaryOp</code> node directly — this function isn't just recognizing valid input, it's constructing an AST as it goes, without a separate parse-tree stage first. <code>parse_term()</code> follows the exact same shape, one level down, handling <code>*</code> instead of <code>+</code>.</p>
+<p>Notice that it builds a <code>BinaryOp</code> node directly. The parser isn't just checking whether the input is valid; it's building the AST as it goes. <code>parse_term()</code> follows the same idea one level down, handling <code>*</code> instead of <code>+</code>.</p>
 </section>
 <section class="slide" id="slide-18b">
 <div class="page-label">Page 20</div>
 <h2>Grammar Constraints for Recursive Descent</h2>
 <p><strong>Left recursion</strong> breaks this technique. Suppose we'd written our own <code>&lt;expr&gt;</code> rule the more "obvious" way:</p>
 <pre><code>&lt;expr&gt; ::= &lt;expr&gt; + &lt;term&gt; | &lt;term&gt;</code></pre>
-<p>A recursive-descent <code>parse_expr()</code> for this rule would call itself before consuming any token — infinite recursion before anything happens. That's exactly why we wrote our actual grammar with the repetition <em>inside</em> the rule (<code>&lt;expr&gt; ::= &lt;term&gt; | &lt;expr&gt; + &lt;term&gt;</code>) instead of the rule calling itself as its own first symbol.</p>
+<p>A recursive-descent <code>parse_expr()</code> for this rule would call itself before consuming any token. It would recurse forever before making any progress. That's why our actual parser grammar avoids having <code>&lt;expr&gt;</code> as the first symbol on the right-hand side.</p>
 <p><strong>Lookahead</strong>: when a grammar offers several alternatives, the parser needs enough information from the next token to pick the right one. If a statement can start with an assignment, an <code>if</code>, or a <code>while</code>, seeing <code>IDENTIFIER</code> next means "try assignment"; seeing <code>IF</code> means "try the if-statement." We'll go deeper into this when we actually design the interpreter's parser.</p>
 </section>
 <section class="slide" id="slide-19">
 <div class="page-label">Page 21</div>
 <h2>Check Your Understanding</h2>
-<p style="font-size:14px; color:var(--ink-soft);">Six questions covering this topic. Not graded — just for you to check where things stand before moving on.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Six questions to check whether the main ideas from this topic have stuck. This isn't graded.</p>
 <div class="check open">
 <div class="qlabel">1</div>
 <div class="qtext">What's the difference between a derivation and a parse tree?</div>
@@ -431,7 +431,7 @@
 <section class="slide" id="slide-20">
 <div class="page-label">Summary</div>
 <h2>The Big Picture</h2>
-<p>One expression, six views: <code>x = a + b * c</code> as characters, as tokens, as a grammar's production rules, as a derivation, as a parse tree, and finally as an AST. Each stage transforms the same information into a form more useful for the next stage.</p>
+<p>One expression, several views: <code>x = a + b * c</code> as source code, as tokens, through grammar rules, as a derivation, as a parse tree, and finally as an AST. Each stage gives us a representation that is more useful for the next stage.</p>
 <div class="diagram">
 <div class="pipeline">
 <div class="artifact">SOURCE CODE</div><div class="arr">↓</div>

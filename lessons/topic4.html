@@ -28,8 +28,8 @@
     <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
   </div>
 </div>
-<p><strong>We have an AST. What does it mean, and how is its meaning evaluated?</strong></p>
-<p>Topic 3 ended with program structure. This topic gives that structure meaning — and asks a question that turns out to be more subtle than it first looks: once you know <em>what</em> an expression computes, you still have to ask <em>when</em> and <em>how</em> it gets computed.</p>
+<p><strong>We have an AST. Now what does it actually mean, and how do we evaluate it?</strong></p>
+<p>Topic 3 gave us program structure. Now we need to give that structure meaning. And there's a second question hiding here: even if we know <em>what</em> an expression computes, we still need to think about <em>when</em> and <em>how</em> that computation happens.</p>
 <h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
 <ul>
   <li>explain the distinction between syntax and semantics;</li>
@@ -38,7 +38,7 @@
   <li>describe operational, denotational, and axiomatic approaches to semantics;</li>
   <li>explain why evaluation order matters, and identify side effects;</li>
   <li>explain referential transparency;</li>
-  <li>distinguish eager and lazy evaluation, including Python's short-circuit evaluation; and</li>
+  <li>distinguish eager and lazy evaluation, and explain Python's concrete short-circuit Boolean evaluation; and</li>
   <li>implement a simple evaluator for a small AST.</li>
 </ul>
 <p style="font-size:14px; color:var(--ink-soft); margin-top:24px;"><strong>Estimated study time:</strong> 75–100 minutes, including the hands-on activities.</p>
@@ -59,11 +59,11 @@
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── c
   </div>
 </div>
-<p>Suppose <code>a = 2</code>, <code>b = 3</code>, <code>c = 4</code>. We know the structure is valid — Topic 3 guarantees that. But what does the program actually <em>do</em>?</p>
+<p>Suppose <code>a = 2</code>, <code>b = 3</code>, and <code>c = 4</code>. Topic 3 tells us that the structure is valid. But what does this program actually <em>do</em>?</p>
 <pre><code>b × c → 12
 a + 12 → 14</code></pre>
-<p>The result, <code>14</code>, gets assigned to <code>x</code>.</p>
-<div class="callout">Parsing gives a program structure. Semantics gives that structure meaning. Evaluation is one way of carrying out that meaning.</div>
+<p>The result, <code>14</code>, is then assigned to <code>x</code>.</p>
+<div class="callout">Parsing gives us structure. Semantics tells us what that structure means. Evaluation is one way of carrying out that meaning.</div>
 </section>
 
 <section class="slide" id="slide-2">
@@ -80,7 +80,7 @@ a + 12 → 14</code></pre>
   <div class="qlabel">Think about it</div>
   <div class="qtext">Consider <code>10 / 0</code>. Is this syntactically valid? What's different about this problem compared to a syntax error?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">The expression has a perfectly valid syntactic structure — division of one number by another is completely legal grammatically. The problem only arises when the expression is <em>evaluated</em>. That's the whole distinction this topic is about: being valid and being meaningful (or even executable) are two different questions.</div>
+  <div class="reveal-content">The expression has a perfectly valid syntactic structure. Division of one number by another is grammatically fine. The problem only appears when we <em>evaluate</em> it. That's the distinction to keep in mind: being syntactically valid and being successfully executable are different questions.</div>
 </div>
 </section>
 
@@ -96,13 +96,13 @@ a + 12 → 14</code></pre>
   <div class="flow-box process">Evaluation</div><div class="flow-arrow">↓</div>
   <div class="flow-box">Value</div>
 </div></div>
-<p>Expressions, then, can be thought of as <strong>computations that produce values</strong> — which raises the obvious next question: how, exactly?</p>
+<p>So expressions are essentially <strong>computations that produce values</strong>. The next question is the interesting one: how does that evaluation actually happen?</p>
 </section>
 
 <section class="slide" id="slide-4">
 <div class="page-label">Page 4</div>
 <h2>Try It: Predict the Value</h2>
-<p>Before running these in Python, predict their results:</p>
+<p>Before you run these in Python, predict what each one will produce:</p>
 <pre><code>2 + 3 * 4
 (2 + 3) * 4
 10 > 3
@@ -113,7 +113,7 @@ a + 12 → 14</code></pre>
   <div class="qlabel">Think about it</div>
   <div class="qtext">Why did the first two expressions produce different results?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">Because they're different ASTs. <code>2 + 3 * 4</code> parses as <code>2 + (3 * 4)</code> — multiplication nested inside — while the parentheses in the second expression force <code>(2 + 3) * 4</code> instead. Evaluation operates on whatever structure syntax and parsing already established; it doesn't get to reinterpret that structure. This is Topic 3's precedence discussion, now paying off directly.</div>
+  <div class="reveal-content">Because they produce different ASTs. <code>2 + 3 * 4</code> is structured as <code>2 + (3 * 4)</code>, while the parentheses in the second expression force <code>(2 + 3) * 4</code>. Evaluation works with the structure that parsing already established; it doesn't get to reinterpret it. This is Topic 3's precedence discussion showing up again.</div>
 </div>
 </section>
 
@@ -129,20 +129,20 @@ a + 12 → 14</code></pre>
     &nbsp;&nbsp;&nbsp;&nbsp;└── 4
   </div>
 </div>
-<p>How should an evaluator process this tree?</p>
+<p>So how should an evaluator process this tree?</p>
 <table>
   <tr><td>Step 1</td><td>Evaluate the left child: <code>2 → 2</code></td></tr>
   <tr><td>Step 2</td><td>Evaluate the right child: <code>Mult(3, 4)</code>, which requires <code>3 × 4 → 12</code></td></tr>
   <tr><td>Step 3</td><td>Evaluate the addition: <code>2 + 12 → 14</code></td></tr>
 </table>
-<p>Therefore: <code>Add(2, Mult(3, 4)) → 14</code>.</p>
-<div class="callout">An evaluator recursively evaluates the parts of an AST and combines their results according to the semantics of each operation.</div>
+<p>So: <code>Add(2, Mult(3, 4)) → 14</code>.</p>
+<div class="callout">An evaluator recursively evaluates the parts of an AST and combines their results according to the meaning of each operation.</div>
 </section>
 
 <section class="slide" id="slide-6">
 <div class="page-label">Page 6</div>
 <h2>Think: Trace the AST</h2>
-<p>Determine the value of each tree <em>without running Python</em> — trace from the leaves upward. The goal isn't arithmetic speed; it's practicing how an evaluator thinks.</p>
+<p>Try to determine the value of each tree <em>without running Python</em>. Trace from the leaves upward. The point isn't to do arithmetic quickly; it's to practice thinking the way an evaluator does.</p>
 
 <div class="check" data-answer="1">
   <div class="qlabel">Example 1</div>
@@ -192,14 +192,14 @@ a + 12 → 14</code></pre>
         return evaluate(node.left) + evaluate(node.right)
     if node.kind == "MULTIPLY":
         return evaluate(node.left) * evaluate(node.right)</code></pre>
-<p>For <code>Add(Number(2), Multiply(Number(3), Number(4)))</code>, the evaluator recursively evaluates the children and returns <code>14</code> — the same trace you just did on paper.</p>
-<div class="callout">The evaluator does not need to rediscover the syntax. The parser has already produced the structure. The evaluator gives that structure meaning.</div>
+<p>For <code>Add(Number(2), Multiply(Number(3), Number(4)))</code>, the evaluator recursively evaluates the children and returns <code>14</code> — exactly the trace you just worked through by hand.</p>
+<div class="callout">The evaluator doesn't need to rediscover the syntax. The parser has already done that work and produced the structure. The evaluator's job is to give that structure meaning.</div>
 </section>
 
 <section class="slide" id="slide-8">
 <div class="page-label">Page 8</div>
 <h2>Build: Complete a Tiny Evaluator</h2>
-<p>Implement the missing cases yourself, in your own Python environment:</p>
+<p>Try implementing the missing cases yourself in Python:</p>
 <pre><code>def evaluate(node):
     if node.kind == "NUMBER":
         return node.value
@@ -230,7 +230,7 @@ a + 12 → 14</code></pre>
     <div class="flow-box">return the result</div>
   </div>
 </div>
-<p style="font-size:14px; color:var(--ink-soft);">This tiny program is deliberately simple — its purpose is to make the mechanism of evaluation concrete before you build a real one.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This evaluator is deliberately tiny. The point is to make the mechanism of evaluation concrete before you build a more complete one.</p>
 </section>
 
 <section class="slide" id="slide-9">
@@ -253,7 +253,7 @@ y = x + 3</code></pre>
 <section class="slide" id="slide-10">
 <div class="page-label">Page 10</div>
 <h2>Denotational and Axiomatic Semantics</h2>
-<p>Operational semantics isn't the only way to describe meaning.</p>
+<p>Operational semantics isn't the only way to describe meaning. There are two other perspectives worth knowing:</p>
 <h3 style="font-size:16px; margin:24px 0 8px;">Denotational semantics</h3>
 <p>Maps a construct to a mathematical object or value. For <code>2 + 3</code>, we might write its meaning as <code>⟦2 + 3⟧ = 5</code>. The focus: <strong>what does this construct denote?</strong></p>
 <h3 style="font-size:16px; margin:24px 0 8px;">Axiomatic semantics</h3>
@@ -273,7 +273,7 @@ x = x + 1
   <tr><td>Denotational</td><td>What does the program mean mathematically?</td></tr>
   <tr><td>Axiomatic</td><td>What properties can we establish about program states?</td></tr>
 </table>
-<p style="font-size:14px; color:var(--ink-soft);">You don't need to memorize the terminology without understanding the distinction. The important point is that semantics can be described from different perspectives.</p>
+<p style="font-size:14px; color:var(--ink-soft);">You don't need to turn these into three definitions to memorize. The important point is the difference in perspective: semantics can describe meaning in terms of steps, mathematical meaning, or properties of program states.</p>
 
 <div class="check open">
   <div class="qlabel">Think about it</div>
@@ -287,12 +287,12 @@ x = x + 1
 <div class="page-label">Page 12</div>
 <h2>Evaluation Order</h2>
 <pre><code>f() + g()</code></pre>
-<p>This expression has a structure — but another question remains: <strong>when</strong> is <code>f()</code> evaluated, and when is <code>g()</code>?</p>
+<p>The expression has a structure, but one question remains: <strong>when</strong> does <code>f()</code> run, and when does <code>g()</code> run?</p>
 <table>
   <tr><th>Precedence</th><td>How an expression is <em>grouped</em> — e.g. <code>a + (b * c)</code>.</td></tr>
   <tr><th>Evaluation order</th><td><em>When</em> the parts of an expression are evaluated.</td></tr>
 </table>
-<p>Related, but not the same thing.</p>
+<p>They're related, but they're not the same thing.</p>
 
 <div class="qbox">
   <div class="qlabel">Try it yourself</div>
@@ -313,13 +313,13 @@ f() + g()</code></pre>
 <section class="slide" id="slide-13">
 <div class="page-label">Page 13</div>
 <h2>Side Effects</h2>
-<p>An expression can do more than produce a value. A <strong>side effect</strong> is an observable change caused by evaluating an expression, beyond just producing its result — changing a variable, modifying an object, performing input/output, raising an exception.</p>
+<p>An expression can do more than produce a value. A <strong>side effect</strong> is an observable change caused by evaluating it — for example, changing a variable, modifying an object, performing input/output, or raising an exception.</p>
 <pre><code>x = 0
 def f():
     global x
     x += 1
     return x</code></pre>
-<p>The call <code>f()</code> produces a value <strong>and</strong> changes <code>x</code>.</p>
+<p>The call <code>f()</code> produces a value <strong>and</strong> changes <code>x</code>. That's the important part.</p>
 
 <div class="qbox">
   <div class="qlabel">Try it yourself</div>
@@ -333,7 +333,7 @@ def f():
 <h2>Why Side Effects Matter</h2>
 <p>Suppose two function calls both modify shared state:</p>
 <pre><code>f() + g()</code></pre>
-<p>If the calls happen in a different order, the final state can also be different — not just which value comes back, but what the program's state looks like afterward.</p>
+<p>If the calls happen in a different order, the final state can change too. It's not just the returned value that can differ; the program's state afterward can differ as well.</p>
 <div class="diagram"><div class="flow">
   <div class="flow-box">Side effects</div>
   <div class="flow-arrow">+</div>
@@ -341,14 +341,14 @@ def f():
   <div class="flow-arrow">↓</div>
   <div class="flow-box process">Observable program behavior</div>
 </div></div>
-<p style="font-size:14px; color:var(--ink-soft);">This is one reason understanding evaluation requires more than just knowing an expression's final value.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This is why understanding evaluation means looking at more than just the final value.</p>
 </section>
 
 <section class="slide" id="slide-15">
 <div class="page-label">Page 15</div>
 <h2>Referential Transparency</h2>
-<p>An expression is <strong>referentially transparent</strong> if it can be replaced by its value without changing the program's behavior.</p>
-<p><code>2 + 3</code> can be replaced by <code>5</code> without changing anything. But consider <code>f()</code> when <code>f()</code> changes program state — can we always replace <code>f()</code> with <code>5</code>, just because it happened to return 5 this time? Not necessarily: the call may have had a side effect that would be silently lost by the substitution.</p>
+<p>An expression is <strong>referentially transparent</strong> if you can replace it with its value without changing the program's behavior.</p>
+<p><code>2 + 3</code> can be replaced by <code>5</code> without changing anything. Now consider <code>f()</code> when the function changes program state. Can we always replace <code>f()</code> with <code>5</code> just because it returned 5 this time? Not necessarily. The call may also have changed state, and that effect would disappear if we made the substitution.</p>
 
 <div class="check open">
   <div class="qlabel">Think about it</div>
@@ -369,14 +369,14 @@ def f():
 → call f(...)</code></pre></div>
   <div class="lang-card"><h4>Lazy</h4><p>Delays computation until its result is actually needed.</p></div>
 </div>
-<p style="font-size:14px; color:var(--ink-soft);">One subtlety: eager evaluation only tells us the arguments are evaluated <em>before</em> the call — it doesn't by itself say whether <code>g()</code> or <code>h()</code> goes first. That order is a separate rule of the language, on top of eager-vs-lazy.</p>
-<p>Lazy evaluation can avoid unnecessary computation and enables techniques that are awkward with purely eager evaluation. But it also means reasoning about a program requires asking not just <strong>what</strong> gets evaluated, but <strong>when — or whether — it gets evaluated at all.</strong></p>
+<p style="font-size:14px; color:var(--ink-soft);">One subtlety: eager evaluation tells us that the arguments are evaluated <em>before</em> the call. It doesn't, by itself, tell us whether <code>g()</code> or <code>h()</code> goes first. That is a separate evaluation-order rule.</p>
+<p>Lazy evaluation can avoid unnecessary computation, but it also changes the question we have to ask when tracing a program: not just <strong>what</strong> gets evaluated, but <strong>when — or whether — it gets evaluated at all.</strong></p>
 </section>
 
 <section class="slide" id="slide-17">
 <div class="page-label">Page 17</div>
 <h2>Try It: Short-Circuit Evaluation in Python</h2>
-<p>Python gives us a concrete example of conditional evaluation through its Boolean operators.</p>
+<p>Python gives us a concrete example of conditional evaluation through <code>and</code> and <code>or</code>.</p>
 <pre><code>def expensive():
     print("computed")
     return True</code></pre>
@@ -390,7 +390,7 @@ def f():
   <div class="qlabel">What happened?</div>
   <div class="qtext">In both cases, does Python call <code>expensive()</code>?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">No — in neither case. Python doesn't evaluate the right-hand side of <code>and</code>/<code>or</code> once the result is already determined: <code>False and ...</code> is always False regardless of the right side, and <code>True or ...</code> is always True regardless of the right side. This is <strong>short-circuit evaluation</strong> — a concrete example of delayed evaluation. It's a narrow, specific exception, though: it doesn't make Python a generally lazy language, just these two operators.</div>
+  <div class="reveal-content">No. In both cases, Python skips <code>expensive()</code> because the result is already determined: <code>False and ...</code> must be False, and <code>True or ...</code> must be True. This is <strong>short-circuit evaluation</strong> — a concrete case where evaluation is delayed or skipped. It doesn't make Python a generally lazy language; this behavior applies to these Boolean operators.</div>
 </div>
 </section>
 
@@ -398,7 +398,7 @@ def f():
 <section class="slide" id="slide-18">
 <div class="page-label">Page 18</div>
 <h2>Errors During Evaluation</h2>
-<p>The previous topics showed different places where problems can occur. Now we can complete the picture.</p>
+<p>We've now seen several places where a program can go wrong. We can put them together:</p>
 <table>
   <tr><td><code>10 ? 2</code>, where <code>?</code> isn't a valid symbol</td><td>Detected during <strong>lexical analysis</strong></td></tr>
   <tr><td><code>10 + * 2</code> — valid tokens, invalid arrangement</td><td>Detected during <strong>syntax analysis</strong></td></tr>
@@ -421,7 +421,7 @@ def f():
 <section class="slide" id="slide-19">
 <div class="page-label">Page 19</div>
 <h2>Check Your Understanding</h2>
-<p style="font-size:14px; color:var(--ink-soft);">Six questions that ask you to put this topic's ideas together, not just recall definitions. Not graded — just for you to check where things stand before moving on.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Six questions to put the ideas from this topic together. This isn't about memorizing definitions; use it to check whether you can reason through the concepts.</p>
 
 <div class="check open">
   <div class="qlabel">1 · Trace it</div>
@@ -485,7 +485,7 @@ def f():
   <div class="flow-box">Behavior</div><div class="flow-arrow">↓</div>
   <div class="flow-box process">Value / Effect</div>
 </div></div>
-<p>We can now see the first part of the language-processing pipeline complete:</p>
+<p>We can now see the first part of our language-processing pipeline:</p>
 <div class="diagram">
   <div class="pipeline">
     <div class="artifact">SOURCE CODE</div><div class="arr">↓</div>
@@ -503,7 +503,7 @@ def f():
   <tr><th>Topic 3</th><td>How those tokens become structure.</td></tr>
   <tr><th>Topic 4</th><td>What that structure means, and how it's evaluated.</td></tr>
 </table>
-<div class="callout">What kinds of values can programs manipulate, and how do languages determine which operations are valid for those values? That's Topic 5: types and type systems.</div>
+<div class="callout">We've gone from characters to tokens, tokens to structure, and structure to evaluation. Next we ask: what kinds of values can programs manipulate, and how do languages determine which operations are valid for those values? That's Topic 5: types and type systems.</div>
 </section>
 
 <div class="end-note" id="endNote" style="display:none; text-align:center; padding:40px 24px; color:var(--ink-soft);">

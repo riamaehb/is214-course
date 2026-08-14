@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 — Study Guides</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --paper: #ffffff;
+    --ink: #202124;
+    --muted: #6b6b68;
+    --line: #deded9;
+    --accent: #2f5d50;
+    --accent-soft: #e8efec;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.6;
+  }
+
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 48px 28px 72px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(38px, 6vw, 64px);
+    line-height: 1.05;
+    font-weight: 500;
+    letter-spacing: -.025em;
+  }
+
+  .intro {
+    max-width: 720px;
+    margin: 22px 0 42px;
+    font-size: 18px;
+    color: #444441;
+  }
+
+  .arc {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 42px;
+  }
+
+  .arc-item {
+    padding: 18px 20px 18px 0;
+  }
+
+  .arc-item + .arc-item {
+    border-left: 1px solid var(--line);
+    padding-left: 20px;
+  }
+
+  .arc-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    color: var(--muted);
+  }
+
+  .arc-value {
+    margin-top: 3px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+
+  .topics {
+    border-top: 1px solid var(--line);
+  }
+
+  a.topic {
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    gap: 20px;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    padding: 22px 8px;
+    border-bottom: 1px solid var(--line);
+    transition: background .15s ease, padding .15s ease;
+  }
+
+  a.topic:hover {
+    background: var(--accent-soft);
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .number {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 25px;
+    color: var(--muted);
+  }
+
+  .topic h2 {
+    margin: 0 0 3px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 23px;
+    font-weight: 500;
+  }
+
+  .topic p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .arrow {
+    font-size: 20px;
+    color: var(--muted);
+  }
+
+  .phase {
+    margin-top: 38px;
+  }
+
+  .phase-label {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 4px 9px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+  }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  @media (max-width: 700px) {
+    .page { padding: 32px 20px 56px; }
+    .arc { grid-template-columns: 1fr; }
+    .arc-item + .arc-item {
+      border-left: 0;
+      border-top: 1px solid var(--line);
+      padding-left: 0;
+    }
+    a.topic {
+      grid-template-columns: 48px 1fr 18px;
+      gap: 12px;
+    }
+    .topic h2 { font-size: 20px; }
+  }
+</style>
+</head>
+
+<body>
+<main class="page">
+  <div class="eyebrow">IS 214 · PRINCIPLES OF PROGRAMMING LANGUAGES</div>
+  <h1>Study Guides</h1>
+
+  <p class="intro">
+    The course follows one question through the entire programming-language
+    pipeline: how does source code become a computation that actually runs?
+    Each topic builds on the previous one and contributes another piece to
+    the interpreter you will eventually build.
+  </p>
+
+  <div class="arc">
+    <div class="arc-item">
+      <div class="arc-label">SYNTAX</div>
+      <div class="arc-value">what is valid</div>
+    </div>
+    <div class="arc-item">
+      <div class="arc-label">SEMANTICS</div>
+      <div class="arc-value">what it means</div>
+    </div>
+    <div class="arc-item">
+      <div class="arc-label">EXECUTION</div>
+      <div class="arc-value">what happens</div>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-label">PHASE 1 · UNDERSTANDING PROGRAMMING LANGUAGES</div>
+    <div class="topics">
+      <a class="topic" href="lessons/topic1.html">
+        <div class="number">01</div>
+        <div>
+          <h2>Programming Languages &amp; Paradigms</h2>
+          <p>Languages, paradigms, compilation and interpretation, and design trade-offs.</p>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="topic" href="lessons/topic2.html">
+        <div class="number">02</div>
+        <div>
+          <h2>Syntax &amp; Lexical Analysis</h2>
+          <p>Characters, lexemes, tokens, lexical analysis, and the boundary between lexical and syntax errors.</p>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="topic" href="lessons/topic3.html">
+        <div class="number">03</div>
+        <div>
+          <h2>Grammars, Parsing &amp; ASTs</h2>
+          <p>Grammars, derivations, parse trees, ambiguity, precedence, associativity, and ASTs.</p>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-label">PHASE 2 · UNDERSTANDING COMPUTATION</div>
+    <div class="topics">
+      <a class="topic" href="lessons/topic4.html">
+        <div class="number">04</div>
+        <div>
+          <h2>Semantics, Expressions &amp; Evaluation</h2>
+          <p>Semantics, expression evaluation, evaluation order, side effects, and eager/lazy evaluation.</p>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="topic" href="lessons/topic5.html">
+        <div class="number">05</div>
+        <div>
+          <h2>Data Types &amp; Type Systems</h2>
+          <p>Values and types, type checking, conversion, inference, and Python's type system.</p>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="topic" href="lessons/topic6.html">
+        <div class="number">06</div>
+        <div>
+          <h2>Names, Binding, Scope &amp; Environments</h2>
+          <p>Names, binding, scope, lifetime, environments, lookup, lexical scope, and closures.</p>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="topic" href="lessons/topic7.html">
+        <div class="number">07</div>
+        <div>
+          <h2>Functions &amp; Abstraction</h2>
+          <p>Functions as values, call environments, parameters, returns, recursion, higher-order functions, and closures.</p>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-label">PHASE 3 · UNDERSTANDING EXECUTION</div>
+    <div class="topics">
+      <a class="topic" href="lessons/topic8.html">
+        <div class="number">08</div>
+        <div>
+          <h2>Control Flow &amp; Exceptions</h2>
+          <p>Selection, iteration, loop control, exceptions, propagation, and execution paths.</p>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="topic" href="lessons/topic9.html">
+        <div class="number">09</div>
+        <div>
+          <h2>Objects, References, Mutability &amp; Memory</h2>
+          <p>Objects, identity, references, aliasing, mutation, reachability, and runtime memory.</p>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="topic" href="lessons/topic10.html">
+        <div class="number">10</div>
+        <div>
+          <h2>Runtime, Interpretation &amp; Python Execution</h2>
+          <p>Runtimes, interpreters, compilers, virtual machines, bytecode, execution models, and integration.</p>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+    </div>
+  </div>
+
+  <footer>
+    IS 214 · Principles of Programming Languages<br>
+    Topics 1–10 · Study Guide Collection
+  </footer>
+</main>
+</body>
+</html>

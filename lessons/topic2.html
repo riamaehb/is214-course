@@ -26,8 +26,8 @@
 <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
 </div>
 </div>
-<p>How does a programming language turn a sequence of characters into something that can be analyzed as a program? This topic takes you through the first part of that process: <strong>characters → lexemes → tokens → token stream</strong>.</p>
-<p>This lesson focuses on tokenization. Parsing and formal grammars — how a token stream becomes structure — are covered in Topic 3.</p>
+<p>How does a programming language turn the characters you type into something it can actually work with? We'll start with the first part of that process: <strong>characters → lexemes → tokens → token stream</strong>.</p>
+<p>Here we're focusing on tokenization. The next question — how a token stream becomes structure — belongs to Topic 3, where we'll look at parsing and formal grammars.</p>
 <h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
 <ul>
 <li>explain what a lexeme and a token are, and how they differ;</li>
@@ -44,9 +44,9 @@
 <div class="page-label">Page 1</div>
 <h2>From Characters to Programs</h2>
 <pre><code>total = price * quantity</code></pre>
-<p>What does a computer actually receive when you write this? Not "a variable," "an assignment," and "an expression" — those are ideas we impose on it. It receives a <strong>sequence of characters</strong>:</p>
+<p>When you write this, what does the language implementation actually receive? Not "a variable," "an assignment," and "an expression." Those are concepts we recognize later. At the start, it has a <strong>sequence of characters</strong>:</p>
 <pre><code>t o t a l   =   p r i c e   *   q u a n t i t y</code></pre>
-<p>The first job of a language implementation is to make sense of that sequence. Here's the road ahead:</p>
+<p>The first job is to turn that character sequence into something later stages can work with. Here's the basic path:</p>
 <div class="diagram">
 <div class="pipeline">
 <div class="artifact">SOURCE CHARACTERS</div>
@@ -62,24 +62,24 @@
 <div class="process p2">Syntax Analysis</div>
 </div>
 </div>
-<p style="font-size:14px; color:var(--ink-soft);">This lesson focuses on the first part of this process — turning characters into tokens. Parsing and formal grammars are covered in the next topic.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This topic stops at tokens. Parsing and formal grammars come next.</p>
 </section>
 <section class="slide" id="slide-2">
 <div class="page-label">Page 2</div>
 <h2>What Is Syntax?</h2>
-<p>A quick reminder from Topic 1:</p>
+<p>Let's connect this back to Topic 1:</p>
 <div class="lang-grid">
 <div class="lang-card"><h4>Valid</h4><pre><code>x = 10 + 5</code></pre></div>
 <div class="lang-card"><h4>Invalid</h4><pre><code>x = + 10 5</code></pre></div>
 </div>
 <div class="callout">Syntax: the rules that determine how the elements of a programming language may be arranged to form valid programs.</div>
-<p style="font-size:14px; color:var(--ink-soft);">Programming languages have formal rules for syntax, and we'll study how those rules are represented using grammars in Topic 3. For now, we're only concerned with the step that happens <em>before</em> syntax can even be checked: turning raw characters into the pieces syntax rules operate on.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Programming languages have formal rules for syntax, and we'll see how those rules are represented with grammars in Topic 3. For now, we're staying one step earlier: before we can check syntax, we need to turn the raw characters into the pieces that syntax rules operate on.</p>
 </section>
 <section class="slide" id="slide-3">
 <div class="page-label">Page 3</div>
 <h2>Characters, Lexemes, and Tokens</h2>
 <pre><code>result = oldsum - value / 100</code></pre>
-<p>Three different levels of description apply to this line:</p>
+<p>There are three useful levels of description here:</p>
 <table>
 <tr><th>Character</th><td>A single symbol in the source text — <code>r</code>, <code>e</code>, <code>s</code>, <code>u</code>, <code>l</code>, <code>t</code>, <code>=</code>, and so on.</td></tr>
 <tr><th>Lexeme</th><td>A sequence of characters recognized as a lexical unit by the language — <code>result</code>, <code>=</code>, <code>oldsum</code>, <code>-</code>, <code>value</code>, <code>/</code>, <code>100</code>.</td></tr>
@@ -94,23 +94,23 @@
 <tr><td><code>-</code></td><td>MINUS</td></tr>
 <tr><td><code>100</code></td><td>INTEGER_LITERAL</td></tr>
 </table>
-<p style="font-size:14px; color:var(--ink-soft);">This is exactly the distinction you'll need when you build your own lexer.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This distinction will matter when you build your own lexer.</p>
 </section>
 <section class="slide" id="slide-4">
 <div class="page-label">Page 4</div>
 <h2>Why Do We Need Tokens?</h2>
 <pre><code>total = price * quantity</code></pre>
-<p>The parser works with tokens rather than individual source characters. It generally does not need to examine the individual characters that make up an identifier such as <code>total</code>; it needs to know that the lexeme is an identifier and, when necessary, retain its value:</p>
+<p>The parser works with tokens rather than individual source characters. It doesn't need to inspect every character in <code>total</code>; it needs to know that this is an identifier and, when necessary, retain its value:</p>
 <div class="token-row">
 <span class="token">IDENTIFIER</span><span class="token">ASSIGN</span><span class="token">IDENTIFIER</span><span class="token">MULTIPLY</span><span class="token">IDENTIFIER</span>
 </div>
-<p>Lexical analysis transforms a messy character sequence into a more useful representation — one where the categories of things matter, not their exact spelling.</p>
+<p>Lexical analysis turns the raw character sequence into a more useful representation. At this point, we care about what kind of thing each piece is, not just the characters themselves.</p>
 <div class="callout">The lexer does not yet determine the complete structure of the program. It identifies the pieces from which that structure can be built.</div>
 </section>
 <section class="slide" id="slide-5">
 <div class="page-label">Page 5</div>
 <h2>What Does a Lexer Actually Do?</h2>
-<p>A lexer (or scanner):</p>
+<p>So what does a lexer actually do? A lexer, or scanner:</p>
 <ol>
 <li>reads source characters;</li>
 <li>groups characters into lexemes;</li>
@@ -128,7 +128,7 @@ INTEGER(42)</code></pre>
 <section class="slide" id="slide-6">
 <div class="page-label">Page 6</div>
 <h2>A Worked Tokenization Example</h2>
-<p>Try tokenizing this yourself before checking:</p>
+<p>Before you reveal the answer, try tokenizing this yourself:</p>
 <pre><code>average = total / count</code></pre>
 <div class="check" data-answer="1">
 <div class="qlabel">Check your understanding</div>
@@ -156,16 +156,16 @@ INTEGER(42)</code></pre>
 <div class="lang-card"><pre><code>x=10+20</code></pre></div>
 <div class="lang-card"><pre><code>x = 10 + 20</code></pre></div>
 </div>
-<p>In many languages, whitespace primarily separates lexemes and is discarded or ignored by the lexer — it does not necessarily become a token itself. That's why these two lines above can produce essentially the same token sequence.</p>
-<p style="font-size:14px; color:var(--ink-soft);">Not always, though: some languages give whitespace a syntactic role. Python, for example, uses indentation as part of its syntax. We won't dive into how Python's indentation-sensitive tokenizing actually works — just flagging it as an interesting exception to keep in mind.</p>
+<p>In many languages, whitespace mainly separates lexemes and is discarded or ignored by the lexer. It doesn't necessarily become a token itself, which is why these two lines can produce essentially the same token sequence.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Not always. Some languages give whitespace a syntactic role. Python, for example, uses indentation as part of its syntax. We won't get into Python's indentation handling here; just keep it in mind as an important exception.</p>
 </section>
 <section class="slide" id="slide-8">
 <div class="page-label">Page 8</div>
 <h2>Identifiers and Keywords</h2>
 <pre><code>total = price + 10</code></pre>
-<p>What makes <code>total</code> an identifier?</p>
+<p>Why is <code>total</code> an identifier?</p>
 <pre><code>if total &gt; 10:</code></pre>
-<p>What makes <code>if</code> different?</p>
+<p>And why is <code>if</code> different?</p>
 <table>
 <tr><th>Identifiers</th><td>Names defined by the language's rules for naming program entities — a programmer chooses them.</td></tr>
 <tr><th>Keywords</th><td>Reserved words with predefined syntactic roles — the language reserves them. In Python: <code>if</code>, <code>else</code>, <code>while</code>, <code>for</code>, <code>def</code>, <code>return</code>, <code>class</code>, and others.</td></tr>
@@ -182,7 +182,7 @@ INTEGER(42)</code></pre>
 <section class="slide" id="slide-9">
 <div class="page-label">Page 9</div>
 <h2>Literals</h2>
-<p>A few common token categories you'll recognize immediately:</p>
+<p>Here are some token categories you'll encounter often:</p>
 <ul>
 <li>integer literals</li>
 <li>floating-point literals</li>
@@ -198,7 +198,7 @@ age = 39</code></pre>
 <p>This conceptually produces:</p>
 <pre><code>IDENTIFIER  ASSIGN  STRING_LITERAL
 IDENTIFIER  ASSIGN  INTEGER_LITERAL</code></pre>
-<p style="font-size:14px; color:var(--ink-soft);">We don't need Python's entire lexical specification here — the goal is just recognizing what lexical categories are, so you can design token types for your own lexer.</p>
+<p style="font-size:14px; color:var(--ink-soft);">We don't need Python's entire lexical specification here. The goal is to recognize the main lexical categories so you can design token types for your own lexer.</p>
 </section>
 <section class="slide" id="slide-10">
 <div class="page-label">Page 10</div>
@@ -211,18 +211,18 @@ IDENTIFIER  ASSIGN  INTEGER_LITERAL</code></pre>
 <tr><td><code>*</code></td><td>MULTIPLY</td></tr>
 <tr><td><code>=</code></td><td>ASSIGN</td></tr>
 </table>
-<p>Operators and delimiters are tokens too. The lexer does not decide what the entire expression means — it identifies the symbols so that later stages can analyze how they relate to each other. We're preparing the ground for Topic 3.</p>
+<p>Operators and delimiters are tokens too. The lexer isn't deciding what the whole expression means yet; it is identifying the pieces so that later stages can work out how they relate. That's the ground we're preparing for Topic 3.</p>
 </section>
 <section class="slide" id="slide-10b">
 <div class="page-label">Page 11</div>
 <h2>How Does a Lexer Recognize a Pattern?</h2>
-<p>You've tokenized several lines by now. But how does the lexer actually decide that <code>total</code> is an IDENTIFIER, and <code>42</code> is an INTEGER_LITERAL? It isn't guessing — each token type is defined by a pattern, and the lexer checks each stretch of characters against those patterns.</p>
-<p>Most token patterns are written as <strong>regular expressions</strong> — the same tool you'd reach for in Python's own <code>re</code> module:</p>
+<p>By now you've seen the result of tokenization. But how does the lexer actually decide that <code>total</code> is an IDENTIFIER and <code>42</code> is an INTEGER_LITERAL? It isn't guessing. Each token type has a pattern, and the lexer checks the source characters against those patterns.</p>
+<p>Many token patterns can be described with <strong>regular expressions</strong> — the same kind of pattern matching you can use with Python's <code>re</code> module:</p>
 <pre><code>import re
 re.match(r'[A-Za-z_][A-Za-z0-9_]*', 'total')   # matches — looks like an identifier
 re.match(r'[0-9]+', '42')                       # matches — looks like an integer literal</code></pre>
-<p>A set of strings that some regular expression can describe is called a <strong>regular language</strong>. Identifiers, integers, operators — every token category you've seen so far is a regular language. That's why a regular expression is enough to recognize each one.</p>
-<p>Mechanically, how does that check actually happen? A lexer is usually built as a <strong>finite automaton</strong>: a machine with a fixed number of states that reads one character at a time and moves between states based on what it reads. Here's roughly what recognizing an identifier looks like:</p>
+<p>A set of strings that can be described by a regular expression is called a <strong>regular language</strong>. The token patterns we've seen so far — identifiers, integers, and similar categories — can be described this way. That's why regular expressions are useful for recognizing them.</p>
+<p>So how does that pattern matching happen mechanically? A lexer can be modeled as a <strong>finite automaton</strong>: a machine with a fixed number of states that reads one character at a time and changes state based on what it sees. For an identifier, the idea is roughly:</p>
 <div class="diagram" style="text-align:left;">
 <div class="tree">
     start<br/>
@@ -231,7 +231,7 @@ re.match(r'[0-9]+', '42')                       # matches — looks like an inte
     → sees anything else → stop, emit IDENTIFIER
   </div>
 </div>
-<p>What happens if the machine runs out of characters it can transition on, and it still isn't in an accepting state? You already know the answer, from the next page: that's a character the lexer can't classify as any valid token.</p>
+<p>What if the input ends, or the machine reaches a character it can't use to continue the pattern, and it isn't in an accepting state? Then the lexer can't form a valid token from that input. That's the idea behind the lexical error on the next page.</p>
 <div class="check" data-answer="1">
 <div class="qlabel">Check your understanding</div>
 <div class="qtext">Which of these would a lexer's regular-expression patterns struggle to handle on their own, no matter how the pattern is written?</div>
@@ -244,16 +244,16 @@ re.match(r'[0-9]+', '42')                       # matches — looks like an inte
 <section class="slide" id="slide-11">
 <div class="page-label">Page 12</div>
 <h2>Lexical Errors</h2>
-<p>Suppose our language does not recognize <code>?</code> as a valid symbol:</p>
+<p>Suppose <code>?</code> isn't a valid symbol in our language:</p>
 <pre><code>x = 10 ? 5</code></pre>
-<p>The lexer encounters a character it cannot classify as any valid token. That's a <strong>lexical error</strong> — the problem happens before structure is even considered.</p>
-<p>Now contrast:</p>
+<p>The lexer encounters a character it can't classify as a valid token. That's a <strong>lexical error</strong>. The problem happens before we even get to structure.</p>
+<p>Now compare that with this:</p>
 <pre><code>x = 10 + * 5</code></pre>
 <p>Every symbol here is recognizable as a token:</p>
 <div class="token-row">
 <span class="token">IDENTIFIER</span><span class="token">ASSIGN</span><span class="token">INTEGER</span><span class="token">PLUS</span><span class="token">MULTIPLY</span><span class="token">INTEGER</span>
 </div>
-<p>The problem is <strong>not</strong> lexical. The tokens all exist — the problem is their arrangement. That's a syntax problem, not a lexical one.</p>
+<p>The problem is <strong>not</strong> lexical. All the tokens exist; the problem is how they are arranged. That's a syntax problem.</p>
 </section>
 <section class="slide" id="slide-12">
 <div class="page-label">Page 13</div>
@@ -264,7 +264,7 @@ print(x)</code></pre>
 <div class="token-row">
 <span class="token">IF</span><span class="token">IDENTIFIER</span><span class="token">GREATER_THAN</span><span class="token">INTEGER</span><span class="token">IDENTIFIER</span><span class="token">…</span>
 </div>
-<p>In Python, the lexer can identify these tokens, but the sequence does not satisfy Python's syntax rules: the <code>if</code> statement requires a colon followed by an indented suite.</p>
+<p>In Python, the lexer can identify these tokens, but the sequence doesn't satisfy Python's syntax rules. The <code>if</code> statement needs a colon followed by an indented suite.</p>
 <div class="callout">Lexical analysis asks: "What are these pieces?" Syntax analysis asks: "Can these pieces be arranged this way?"</div>
 <p style="font-size:14px; color:var(--ink-soft);">Topic 3 examines how syntax can be described formally, and how a parser actually analyzes a token sequence to answer that second question.</p>
 </section>
@@ -311,12 +311,12 @@ print(x)</code></pre>
 <h3 style="font-size:15.5px; margin:22px 0 8px; color:var(--syntax);">Step 4 — Syntax</h3>
 <p>A later stage can now ask whether this token sequence is syntactically valid. For this example, the answer is yes.</p>
 <h3 style="font-size:15.5px; margin:22px 0 8px; color:var(--semantics);">Step 5 — Structure</h3>
-<p style="font-size:14px; color:var(--ink-soft);">We don't build that structure yet — that's Topic 3. The next stage needs to determine how these tokens are structurally related, which is the job of parsing. This is the perfect stopping point for Topic 2.</p>
+<p style="font-size:14px; color:var(--ink-soft);">We don't build that structure yet — that's Topic 3. For now, we've gone as far as we need to: the characters have become tokens, and the next question is how those tokens fit together. That's parsing.</p>
 </section>
 <section class="slide" id="slide-15">
 <div class="page-label">Page 16</div>
 <h2>Check Your Understanding</h2>
-<p style="font-size:14px; color:var(--ink-soft);">Six questions covering this topic. Not graded — just for you to check where things stand before moving on.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Six questions to check whether the main ideas from this topic have stuck. This isn't graded.</p>
 <div class="check open">
 <div class="qlabel">1</div>
 <div class="qtext">What is a lexeme?</div>
@@ -360,8 +360,8 @@ print(x)</code></pre>
 <section class="slide" id="slide-16">
 <div class="page-label">Summary</div>
 <h2>The Big Picture</h2>
-<p>Lexical analysis identifies the pieces. Syntax analysis determines how the pieces fit together. That distinction — and the difference between a lexical error and a syntax error — is the core idea to carry forward from this topic.</p>
-<p>Here's where this fits in the larger arc:</p>
+<p>Lexical analysis identifies the pieces. Syntax analysis determines how those pieces fit together. That's the core distinction to carry forward — along with the difference between a lexical error and a syntax error.</p>
+<p>Here's where this fits into the larger story:</p>
 <table>
 <tr><th>Topic 1</th><td>What are programming languages, and how do they differ?</td></tr>
 <tr><th>Topic 2</th><td>How do we turn source characters into tokens, and what's the difference between lexical and syntactic validity?</td></tr>

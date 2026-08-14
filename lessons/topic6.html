@@ -28,8 +28,8 @@
     <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
   </div>
 </div>
-<p>Topic 5 established: <strong>value → type → valid operation</strong>. This topic asks the next question: <strong>when a program uses a name, how does the language know which value that name refers to, and where is that binding valid?</strong></p>
-<p>Names, bindings, scope, and environments are parts of one coherent mechanism — this lesson builds that mechanism piece by piece, ending with closures as a natural consequence of it, not a separate mysterious feature.</p>
+<p>Topic 5 established <strong>value → type → valid operation</strong>. Now we can ask the next question: <strong>when a program uses a name, how does the language know which value that name refers to, and where is that binding valid?</strong></p>
+<p>Names, bindings, scope, and environments are really parts of one mechanism. We'll build that mechanism piece by piece, and closures will come out of it naturally rather than appearing as a separate mysterious feature.</p>
 <h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
 <ul>
   <li>explain the difference between a name, a binding, and a value;</li>
@@ -47,7 +47,7 @@
 <h2>A Name Is Not a Value</h2>
 <pre><code>x = 10</code></pre>
 <div class="callout">What is x?</div>
-<p>It's tempting to say "x is 10." But look closer:</p>
+<p>It's tempting to say "x is 10." But let's slow down and look at what's actually here:</p>
 <table>
   <tr><td><code>x</code></td><td>a name</td></tr>
   <tr><td><code>10</code></td><td>a value</td></tr>
@@ -55,9 +55,9 @@
 <pre><code>x = 10
 y = x</code></pre>
 <ul>
-  <li>Are <code>x</code> and <code>y</code> the same name? No — two different names.</li>
+  <li>Are <code>x</code> and <code>y</code> the same name? No — they're two different names.</li>
   <li>Do they refer to the same value? Yes, right now — both refer to 10.</li>
-  <li>What happens if <code>x</code> changes later? We'll find out on the next page — but notice you can't yet answer this from the code alone.</li>
+  <li>What happens if <code>x</code> changes later? We'll get to that next. For now, notice that you can't answer it by treating <code>x</code> as if it simply "contains" 10.</li>
 </ul>
 <div class="callout">Names, bindings, and values are related, but they are not the same thing.</div>
 </section>
@@ -66,7 +66,7 @@ y = x</code></pre>
 <div class="page-label">Page 2</div>
 <h2>Names, Bindings, and Rebinding</h2>
 <p>A <strong>binding</strong> establishes an association between a name and a value.</p>
-<p style="font-size:14px; color:var(--ink-soft);">More precisely, a binding associates a name with a value or object — we'll look closely at what that distinction means, and at references, identity, aliasing, and mutability, in Topic 9. For now, "value" is close enough.</p>
+<p style="font-size:14px; color:var(--ink-soft);">More precisely, a binding associates a name with a value or object. We'll look more closely at references, identity, aliasing, and mutability in Topic 9. For now, "value" is enough for the model we're building.</p>
 <pre><code>x = 10</code></pre>
 <div class="diagram" style="text-align:left;">
   <div class="tree">x ─────→ 10</div>
@@ -75,13 +75,13 @@ y = x</code></pre>
 <div class="diagram" style="text-align:left;">
   <div class="tree">x ─────→ 20</div>
 </div>
-<p>Assignment <strong>establishes or updates</strong> a binding — it doesn't make a name permanently "contain" a value. The emphasis is on the relationship between the name and whatever it currently refers to.</p>
+<p>Assignment <strong>establishes or updates</strong> a binding. It doesn't make a name permanently "contain" a value. The important thing is the relationship between the name and whatever it currently refers to.</p>
 
 <div class="check open">
   <div class="qlabel">Predict</div>
   <div class="qtext">Trace this: <code>x = 10</code>, then <code>y = x</code>, then <code>x = 20</code>. What does <code>y</code> refer to now?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content"><code>y</code> still refers to the same value that <code>x</code> referred to at that moment — 10. <code>y = x</code> made <code>y</code> refer to whatever <code>x</code> referred to right then; it didn't create a permanent link between the two names, and it didn't copy anything into a separate slot for <code>y</code>. Rebinding <code>x</code> afterward has no effect on <code>y</code>, since <code>y</code>'s own binding was already settled.</div>
+  <div class="reveal-content"><code>y</code> still refers to 10. At the moment <code>y = x</code> runs, the interpreter looks up <code>x</code> and uses that value to establish <code>y</code>'s own binding. Rebinding <code>x</code> afterward doesn't change <code>y</code>.</div>
 </div>
 </section>
 
@@ -93,14 +93,14 @@ y = x</code></pre>
 def f():
     x = 20</code></pre>
 <div class="callout">When f() runs, which x is being used?</div>
-<p>There are now two different bindings for the name <code>x</code> — one outside <code>f</code>, one inside it. Nothing we've defined so far tells us which one a given piece of code actually sees.</p>
-<p style="font-size:14px; color:var(--ink-soft);">That gap is exactly what <strong>scope</strong> is about to answer.</p>
+<p>There are now two bindings for the name <code>x</code> — one outside <code>f</code>, one inside it. But which one does a particular piece of code actually see? We need another concept to answer that.</p>
+<p style="font-size:14px; color:var(--ink-soft);">That is exactly what <strong>scope</strong> is about.</p>
 </section>
 
 <section class="slide" id="slide-4">
 <div class="page-label">Page 4</div>
 <h2>Scope: Local and Global</h2>
-<div class="callout">Scope is the region of a program in which a binding is visible or can be referenced.</div>
+<div class="callout">Scope is about visibility. Lifetime is about duration.</div>
 <pre><code>x = 10
 
 def f():
@@ -115,7 +115,7 @@ def f():
   <tr><th>Global scope</th><td><code>x</code></td></tr>
   <tr><th>Local (function) scope</th><td><code>y</code></td></tr>
 </table>
-<p style="font-size:14px; color:var(--ink-soft);">Scope isn't a vocabulary word to memorize — it's the answer to a real question a program forces you to ask: from right here, what names can I actually see?</p>
+<p style="font-size:14px; color:var(--ink-soft);">Scope isn't just a vocabulary word to memorize. It's the answer to a question the program forces us to ask: from right here, what names can I actually see?</p>
 </section>
 
 <section class="slide" id="slide-5">
@@ -143,19 +143,19 @@ def outer():
     &nbsp;&nbsp;z
   </div>
 </div>
-<p><code>inner()</code> can see all three: its own <code>z</code>, <code>outer</code>'s <code>y</code>, and the global <code>x</code>. This is <strong>lexical scope</strong>: name visibility is determined by <em>where code is written</em>, not by how it happens to be called.</p>
+<p><code>inner()</code> can see all three: its own <code>z</code>, <code>outer</code>'s <code>y</code>, and the global <code>x</code>. This is <strong>lexical scope</strong>: name visibility is determined by <em>where the code is written</em>, not by how the function happens to be called.</p>
 <div class="diagram"><div class="flow">
   <div class="flow-box">where a function is defined</div><div class="flow-arrow">↓</div>
   <div class="flow-box">determines its surrounding scopes</div><div class="flow-arrow">↓</div>
   <div class="flow-box process">determines available bindings</div>
 </div></div>
-<p style="font-size:14px; color:var(--ink-soft);">This is the scoping model you'll use for the rest of the course.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This is the scoping model we'll use for the rest of the course.</p>
 </section>
 
 <section class="slide" id="slide-6">
 <div class="page-label">Page 6</div>
 <h2>Dynamic Scope</h2>
-<p>A useful contrast, not something you'll implement:</p>
+<p>Here's a useful contrast. You won't implement this one:</p>
 <pre><code>x = "global"
 
 def f():
@@ -169,7 +169,7 @@ def g():
   <tr><th>Dynamic scope</th><td><code>f</code> would find <code>g</code>'s <code>x</code> instead — because that's who <em>called</em> it.</td></tr>
 </table>
 <div class="callout">Lexical scope follows program structure. Dynamic scope follows the calling context.</div>
-<p style="font-size:14px; color:var(--ink-soft);">Python uses lexical scope. Dynamic scope is here for comparison — to understand it as a real language-design choice other languages have made, not something you need to build.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Python uses lexical scope. Dynamic scope is here for comparison — it's a real language-design choice, but not something you'll implement.</p>
 </section>
 
 <section class="slide" id="slide-7">
@@ -183,14 +183,14 @@ def g():
     y = 20
     return y</code></pre>
 <p><code>y</code>'s scope is the body of <code>f</code> — that's where the name is visible. Its lifetime is about how long the associated runtime entity remains available. These are genuinely different questions: scope is about visibility, while lifetime is about duration.</p>
-<p style="font-size:14px; color:var(--ink-soft);">That's not the whole story, though — closures provide an important case where a binding from an enclosing function remains reachable well after that function has returned. We'll see exactly how in a few pages.</p>
+<p style="font-size:14px; color:var(--ink-soft);">That's not the whole story, though. Closures give us an important case where a binding from an enclosing function remains reachable after that function has returned. We'll see exactly how in a few pages.</p>
 <p style="font-size:14px; color:var(--ink-soft);">We're not going into memory-management details here — that's Topic 9.</p>
 </section>
 
 <section class="slide" id="slide-8">
 <div class="page-label">Page 8</div>
 <h2>The Environment</h2>
-<p>An <strong>environment</strong> is a runtime structure that records bindings between names and values — the mechanism that actually makes scope work.</p>
+<p>An <strong>environment</strong> is a runtime structure that records bindings between names and values. This is the runtime mechanism that actually makes scope work.</p>
 <pre><code>{
     "x": 10,
     "y": 20
@@ -208,13 +208,13 @@ def g():
   <div class="flow-box process">environment</div><div class="flow-arrow">↓</div>
   <div class="flow-box">value</div>
 </div></div>
-<p style="font-size:14px; color:var(--ink-soft);">This is the mechanism that lets an interpreter actually implement scope — not just talk about it.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This is the mechanism that lets an interpreter actually implement scope — not just describe it.</p>
 </section>
 
 <section class="slide" id="slide-9">
 <div class="page-label">Page 9</div>
 <h2>Nested Environments</h2>
-<p>An environment can point to a <strong>parent</strong> — the environment it's nested inside:</p>
+<p>An environment can point to a <strong>parent</strong>: the environment that surrounds it.</p>
 <pre><code>environment = {
     "bindings": {"y": 20},
     "parent": {
@@ -235,13 +235,13 @@ def g():
     </div>
   </div>
 </div>
-<div class="callout">Nested environments are a runtime representation of nested scopes.</div>
+<div class="callout">Nested environments give the interpreter a runtime representation of nested scopes.</div>
 </section>
 
 <section class="slide" id="slide-10">
 <div class="page-label">Page 10</div>
 <h2>How Name Lookup Works</h2>
-<p>Using the same nested environment from the last page:</p>
+<p>Let's use the same nested environment from the last page:</p>
 <div class="lang-grid">
   <div class="lang-card"><h4><code>lookup("y")</code></h4>
     <div class="tree">current environment<br>↓<br>y found<br>↓<br>20</div>
@@ -253,13 +253,13 @@ def g():
 <div class="lang-card" style="margin-top:16px;"><h4><code>lookup("z")</code></h4>
   <div class="tree">current<br>↓<br>parent<br>↓<br>no binding<br>↓<br>undefined-name error</div>
 </div>
-<div class="callout">Current environment → parent environment → continue until found or no parent remains.</div>
+<div class="callout">The basic rule is simple: current environment → parent environment → keep going until the name is found or there is no parent left.</div>
 </section>
 
 <section class="slide" id="slide-11">
 <div class="page-label">Page 11</div>
 <h2>Build: Implement Name Lookup</h2>
-<p>Start with a flat environment:</p>
+<p>Let's start with a flat environment:</p>
 <pre><code>def lookup(name, environment):
     ...
 
@@ -267,7 +267,7 @@ environment = {
     "bindings": {"x": 10, "y": 20},
     "parent": None
 }</code></pre>
-<p>Then extend your function to handle nested environments:</p>
+<p>Then extend the function so it can follow parent environments:</p>
 <pre><code>environment = {
     "bindings": {"y": 20},
     "parent": {
@@ -279,8 +279,8 @@ environment = {
 <pre><code>lookup("y", environment)  # 20
 lookup("x", environment)  # 10
 lookup("z", environment)  # undefined-name error</code></pre>
-<div class="callout">Specify exactly how a failed lookup is represented — for example, raise a NameError. A failed lookup must be clearly distinguishable from a legitimate value like None.</div>
-<p style="font-size:14px; color:var(--ink-soft);">This small function is a working model of the environment structure your own interpreter will eventually need.</p>
+<div class="callout">Be explicit about what happens when lookup fails — for example, raise a <code>NameError</code>. A failed lookup must be distinguishable from a legitimate value such as <code>None</code>.</div>
+<p style="font-size:14px; color:var(--ink-soft);">This small function is a working model of the environment structure your interpreter will eventually need.</p>
 </section>
 
 <section class="slide" id="slide-12">
@@ -290,7 +290,7 @@ lookup("z", environment)  # undefined-name error</code></pre>
   <tr><th>Lookup</th><td><code>x</code> asks: what value is currently associated with <code>x</code>?</td></tr>
   <tr><th>Assignment</th><td><code>x = 10</code> asks: establish or update the binding for <code>x</code>.</td></tr>
 </table>
-<p>Trace the environment after each statement:</p>
+<p>Let's trace the environment after each statement:</p>
 <pre><code>x = 10
 y = x
 x = 20</code></pre>
@@ -299,9 +299,9 @@ x = 20</code></pre>
   <div class="qlabel">Trace it</div>
   <div class="qtext">What does the environment look like after each of the three lines?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">After <code>x = 10</code>: <code>x → 10</code>. After <code>y = x</code>: <code>x → 10, y → 10</code> — y looked up x's current value and bound itself to it. After <code>x = 20</code>: <code>x → 20, y → 10</code> — only x's binding changed; y was never linked to x itself, only to the value x had at the moment of the lookup.</div>
+  <div class="reveal-content">After <code>x = 10</code>: <code>x → 10</code>. After <code>y = x</code>: <code>x → 10, y → 10</code>. Then after <code>x = 20</code>: <code>x → 20, y → 10</code>. The important part is that rebinding <code>x</code> changes <code>x</code>'s binding; it doesn't reach over and change <code>y</code>'s binding.</div>
 </div>
-<p style="font-size:14px; color:var(--ink-soft);">Deeper questions about references and aliasing — what happens with mutable objects specifically — wait until Topic 9. For now, this is purely about binding and lookup.</p>
+<p style="font-size:14px; color:var(--ink-soft);">We'll wait until Topic 9 for the deeper questions about references and aliasing, especially with mutable objects. For now, we're focusing on binding and lookup.</p>
 </section>
 
 <section class="slide" id="slide-13">
@@ -314,7 +314,7 @@ x = 20</code></pre>
 
 add5 = make_adder(5)
 add5(3)</code></pre>
-<div class="callout">make_adder has already finished running. Where does add get x from?</div>
+<div class="callout"><code>make_adder</code> has already finished running. So where does <code>add</code> get <code>x</code> from?</div>
 <ol>
   <li><code>make_adder(5)</code> creates a binding <code>x → 5</code>.</li>
   <li><code>add</code> is defined inside that environment.</li>
@@ -342,7 +342,7 @@ add5(3)</code></pre>
     <div style="font-weight:600;">8</div>
   </div>
 </div>
-<p>This should feel like a consequence of the model, not a mysterious feature:</p>
+<p>This should now feel like a consequence of the model, not a mysterious feature:</p>
 <div class="diagram"><div class="flow">
   <div class="flow-box">lexical scope</div><div class="flow-arrow">↓</div>
   <div class="flow-box">enclosing environment</div><div class="flow-arrow">↓</div>
@@ -354,7 +354,7 @@ add5(3)</code></pre>
 <section class="slide" id="slide-14">
 <div class="page-label">Page 14</div>
 <h2>Synthesis: Trace the Environment</h2>
-<p>The main reasoning challenge of this topic:</p>
+<p>Here's the main tracing challenge from this topic:</p>
 <pre><code>x = 10
 
 def outer():
@@ -365,20 +365,20 @@ def outer():
 
 f = outer()
 print(f())</code></pre>
-<p>Trace through: the global <code>x</code>, the <code>outer</code> call, the local <code>x</code> inside <code>outer</code>, the <code>inner</code> function, the environment <code>inner</code> captures, what happens when <code>f()</code> is called, and which <code>x</code> lookup actually finds.</p>
+<p>Trace the global <code>x</code>, the <code>outer</code> call, the local <code>x</code> inside <code>outer</code>, the <code>inner</code> function, the environment <code>inner</code> captures, and finally which <code>x</code> the lookup finds when <code>f()</code> runs.</p>
 
 <div class="check open">
   <div class="qlabel">Trace it</div>
   <div class="qtext">What does <code>print(f())</code> output?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content"><code>20</code>. <code>outer()</code> creates its own local <code>x → 20</code>, shadowing the global one. <code>inner</code> is defined inside <code>outer</code>'s environment, so it captures <em>that</em> environment — the one where <code>x</code> is 20 — not the global one. <code>outer()</code> returns <code>inner</code> (bound to <code>f</code>), and even though <code>outer</code> has already finished running by the time <code>f()</code> is called, the captured environment is still there. Lookup finds outer's <code>x</code> first, before it would ever reach the global one.</div>
+  <div class="reveal-content"><code>20</code>. <code>outer()</code> creates its own local <code>x → 20</code>, which shadows the global <code>x</code>. Because <code>inner</code> is defined inside <code>outer</code>, it captures <em>that</em> enclosing environment. When <code>f()</code> is later called, lookup finds the captured <code>x → 20</code> before it would ever reach the global environment.</div>
 </div>
 </section>
 
 <section class="slide" id="slide-15">
 <div class="page-label">Page 15</div>
 <h2>Check Your Understanding</h2>
-<p style="font-size:14px; color:var(--ink-soft);">Eight questions that ask you to apply this topic's ideas. Not graded — just for you to check where things stand before moving on.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Eight questions to check whether you can apply the ideas from this topic. This isn't graded.</p>
 
 <div class="check open">
   <div class="qlabel">1 · Name vs. value</div>
@@ -391,7 +391,7 @@ print(f())</code></pre>
   <div class="qlabel">2 · Binding</div>
   <div class="qtext">What actually happens, in terms of bindings, when <code>x = 10</code> executes?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">A binding is established — an association between the name <code>x</code> and the value 10 is recorded, so that later references to <code>x</code> can find that value again. Nothing is "stored inside" <code>x</code>; the binding is the relationship itself.</div>
+  <div class="reveal-content">A binding is established between the name <code>x</code> and the value 10, so later references to <code>x</code> can find that value. The important idea is the binding itself: <code>x</code> is a name, not a container holding 10.</div>
 </div>
 
 <div class="check open" style="margin-top:16px;">
@@ -419,21 +419,21 @@ print(f())</code></pre>
   <div class="qlabel">6 · Environment</div>
   <div class="qtext">Why does an interpreter need an environment at all — why not just search the program text for the most recent assignment to a name?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">Because "most recent" isn't well-defined at runtime — the same line of code can run many times (different function calls, recursive calls, closures) each with its own bindings. An environment gives the interpreter an actual runtime structure — name-to-value associations that exist independently of the source text — so lookup has something concrete to search instead of trying to reconstruct history from the code itself.</div>
+  <div class="reveal-content">Because "most recent" isn't enough to describe runtime state. The same line of code can run many times — in different function calls, recursive calls, or closures — with different bindings each time. An environment gives the interpreter an actual runtime structure to search, instead of trying to reconstruct runtime state from the source text.</div>
 </div>
 
 <div class="check open" style="margin-top:16px;">
   <div class="qlabel">7 · Nested lookup</div>
   <div class="qtext">Given the nested environment <code>{bindings: {y: 1}, parent: {bindings: {x: 2}, parent: None}}</code>, trace <code>lookup("x")</code> step by step.</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">Check the current environment's bindings — <code>x</code> isn't there, only <code>y</code>. Follow the parent pointer to the enclosing environment. Check its bindings — <code>x → 2</code> is found. Return 2.</div>
+  <div class="reveal-content">First check the current environment: <code>x</code> isn't there; only <code>y</code> is. Follow the parent pointer. In the enclosing environment, <code>x → 2</code> is found. Return 2.</div>
 </div>
 
 <div class="check open" style="margin-top:16px;">
   <div class="qlabel">8 · Closures</div>
   <div class="qtext"><code>make_adder</code> has already returned by the time <code>add5(3)</code> runs. Why does <code>add5</code> still know what <code>x</code> is?</div>
   <button class="reveal-btn">Reveal answer</button>
-  <div class="reveal-content">Because <code>add</code> retains access to the environment it was defined in — the one containing <code>x → 5</code> — for as long as <code>add</code> itself exists. The environment remains reachable specifically because the returned function keeps a reference to it, which is exactly what makes it a closure.</div>
+  <div class="reveal-content">Because <code>add</code> retains access to the environment in which it was defined — the one containing <code>x → 5</code>. The returned function keeps that environment reachable, which is exactly what makes <code>add</code> a closure.</div>
 </div>
 
 <div class="qbox" style="margin-top:24px;">
@@ -464,7 +464,7 @@ print(f())</code></pre>
   <tr><th>Topic 5</th><td>value → type → valid operation.</td></tr>
   <tr><th>Topic 6</th><td>value → name → binding → environment.</td></tr>
 </table>
-<div class="callout">If an environment tells us what names refer to, what happens when those names belong to functions that can receive arguments, return values, and create new functions? That's Topic 7: Functions &amp; Abstraction.</div>
+<div class="callout">If environments tell us how names refer to values, what changes when those names belong to functions that can receive arguments, return values, and create new functions? That's Topic 7: Functions &amp; Abstraction.</div>
 </section>
 
 <div class="end-note" id="endNote" style="display:none; text-align:center; padding:40px 24px; color:var(--ink-soft);">

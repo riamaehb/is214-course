@@ -28,8 +28,8 @@
     <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
   </div>
 </div>
-<p>Topic 4 ended with: <strong>AST → evaluation → value</strong>. This topic asks the next question: <strong>what kind of value is this, and what operations are valid for it?</strong></p>
-<p>Types are how a programming language classifies values and constrains what you're allowed to do with them. This lesson stays practical and interpreter-oriented — enough type-system thinking to build a working evaluator, not a formal type-theory course.</p>
+<p>Topic 4 ended with <strong>AST → evaluation → value</strong>. Now we can ask the next question: <strong>what kind of value is this, and what operations are valid for it?</strong></p>
+<p>Types are how a programming language classifies values and determines what you can do with them. We'll keep this practical and interpreter-oriented: enough type-system thinking to build a working evaluator, without turning this into a formal type-theory course.</p>
 <h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
 <ul>
   <li>explain the relationship between values, types, and valid operations;</li>
@@ -50,9 +50,9 @@
 <pre><code>2 + 3</code></pre>
 <p>produces a value. But:</p>
 <pre><code>2 + "3"</code></pre>
-<p>produces a problem in Python.</p>
-<div class="callout">Why can a language allow one expression but reject another?</div>
-<p>Both are syntactically identical in shape — a number, a plus sign, something else. The difference isn't structural. It's about <em>what kind of thing</em> each operand is.</p>
+<p>causes a problem in Python.</p>
+<div class="callout">So why can a language allow one expression but reject another?</div>
+<p>Both have the same basic syntactic shape: something, <code>+</code>, something. The difference isn't syntax. It's <em>what kind of thing</em> each operand is.</p>
 <div class="diagram"><div class="flow">
   <div class="flow-box">value</div><div class="flow-arrow">↓</div>
   <div class="flow-box">type</div><div class="flow-arrow">↓</div>
@@ -70,26 +70,26 @@
   <tr><td><code>x = 42</code></td><td>an assignment</td></tr>
   <tr><td><code>x + 3</code></td><td>an expression, whose evaluation produces a value</td></tr>
 </table>
-<p style="font-size:14px; color:var(--ink-soft);">This is exactly Topic 4's evaluation model — an expression evaluates to a value. Types are about to add a second question on top of it: not just <em>what value</em>, but <em>what kind</em>.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This is the evaluation model from Topic 4: an expression evaluates to a value. Types add another question on top of that: not just <em>what value</em>, but <em>what kind</em> of value?</p>
 </section>
 
 <section class="slide" id="slide-3">
 <div class="page-label">Page 3</div>
 <h2>What Is a Type?</h2>
-<p>A <strong>type</strong> is a classification of values that helps determine which operations are meaningful.</p>
+<p>A <strong>type</strong> is a classification of values that helps determine which operations are meaningful for them.</p>
 <table>
   <tr><td><code>42</code></td><td><code>int</code></td></tr>
   <tr><td><code>3.14</code></td><td><code>float</code></td></tr>
   <tr><td><code>"hello"</code></td><td><code>str</code></td></tr>
   <tr><td><code>True</code></td><td><code>bool</code></td></tr>
 </table>
-<div class="callout">A type tells us what kind of value we have, and what operations the language allows on it.</div>
+<div class="callout">A type tells us what kind of value we're dealing with, and what operations the language allows us to perform on it.</div>
 </section>
 
 <section class="slide" id="slide-4">
 <div class="page-label">Page 4</div>
 <h2>Predicting Expression Types</h2>
-<p>Literals have obvious types. But expressions have types too — predict each one before checking:</p>
+<p>Literals have obvious types. But expressions have types too. Let's see if you can predict them before checking:</p>
 
 <div class="check" data-answer="0">
   <div class="qlabel">Predict the type</div>
@@ -127,8 +127,8 @@
   <tr><th>Static typing</th><td>Type relationships are checked primarily before execution.</td></tr>
   <tr><th>Dynamic typing</th><td>Type relationships are checked primarily during execution.</td></tr>
 </table>
-<p style="font-size:14px; color:var(--ink-soft);">These describe the <em>typical timing</em> of type checking, not a complete definition of a language's entire type system — real languages vary quite a bit in the details.</p>
-<div class="callout">Avoid the trap: static does not automatically mean "safe," and dynamic does not automatically mean "unsafe." These are two different questions.</div>
+<p style="font-size:14px; color:var(--ink-soft);">These describe the <em>typical timing</em> of type checking. They aren't complete definitions of an entire type system — real languages vary in the details.</p>
+<div class="callout">One trap to avoid: static does not automatically mean "safe," and dynamic does not automatically mean "unsafe." Those are different questions.</div>
 </section>
 
 <section class="slide" id="slide-6">
@@ -136,9 +136,9 @@
 <h2>When Is the Error Detected?</h2>
 <pre><code>x = 10
 x + "hello"</code></pre>
-<p>Every character here is a valid token, and the arrangement is completely valid syntax — <code>expression + expression</code> is fine structurally. The problem only appears once Python actually tries to add an int and a str together.</p>
+<p>Every character here is a valid token, and the arrangement is valid syntax. <code>expression + expression</code> is perfectly fine structurally. The problem only appears when Python actually tries to add an <code>int</code> and a <code>str</code> together.</p>
 <div class="callout">In a dynamically typed language like Python, a type problem is usually just a specific kind of evaluation-time problem — not a separate fourth detection stage alongside lexical and syntax errors.</div>
-<p style="font-size:14px; color:var(--ink-soft);">That's not universal, though — some statically typed languages check many type rules <em>before</em> execution, catching exactly this kind of mismatch without ever running the program. Whether a type problem shows up early or late depends on the language, which is exactly what "static vs. dynamic" from the last page was describing.</p>
+<p style="font-size:14px; color:var(--ink-soft);">That's not universal, though. Some statically typed languages check many type rules <em>before</em> execution, so a mismatch like this can be caught without running the program at all. Whether a type problem shows up early or late depends on the language — which is exactly what the static-vs-dynamic distinction is about.</p>
 </section>
 
 <section class="slide" id="slide-7">
@@ -150,9 +150,9 @@ x + "hello"</code></pre>
   <tr><td><code>str + str</code></td><td>valid</td></tr>
   <tr><td><code>int + str</code></td><td>?</td></tr>
 </table>
-<p>The language answers that <code>?</code> using a <strong>type rule</strong> — a statement of which types an operation accepts and what type it produces:</p>
+<p>The language answers that <code>?</code> using a <strong>type rule</strong>: a statement of which types an operation accepts and what type it produces:</p>
 <pre><code>+ : int × int → int</code></pre>
-<p style="font-size:14px; color:var(--ink-soft);">Read as: "+ takes an int and an int, and produces an int." The exact rules — and which combinations are allowed at all — depend entirely on the language.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Read this as: "+ takes an int and an int, and produces an int." The exact rules — including which combinations are allowed — depend on the language.</p>
 <div class="diagram"><div class="flow">
   <div class="flow-box">values</div><div class="flow-arrow">↓</div>
   <div class="flow-box">types</div><div class="flow-arrow">↓</div>
@@ -164,7 +164,7 @@ x + "hello"</code></pre>
 <section class="slide" id="slide-8">
 <div class="page-label">Page 8</div>
 <h2>Build: A Small Type Checker</h2>
-<p>Here's a tiny function that implements one type rule for addition. Notice it returns a plain Boolean — <code>True</code> if the operation is allowed, <code>False</code> if not:</p>
+<p>Here's a tiny function that implements one type rule for addition. Notice that it returns a simple Boolean: <code>True</code> if the operation is allowed, <code>False</code> if it isn't:</p>
 <pre><code>def can_add(left, right):
     return (
         isinstance(left, (int, float))
@@ -173,13 +173,13 @@ x + "hello"</code></pre>
         isinstance(left, str)
         and isinstance(right, str)
     )</code></pre>
-<p>In your own Python environment, try extending it:</p>
+<p>Now try extending it in your own Python environment:</p>
 <ul>
   <li>write a similar <code>can_multiply</code> function;</li>
   <li>try extending the checker to handle Boolean operands — pay attention to how Python's <code>bool</code> relates to <code>int</code>;</li>
   <li>have it return a simple type-error message instead of just <code>False</code>.</li>
 </ul>
-<div class="callout">This is deliberately small — it's an illustration of the idea behind type checking, not a full type-system implementation.</div>
+<div class="callout">This is deliberately small. We're illustrating the idea behind type checking, not building a complete type system.</div>
 </section>
 
 <section class="slide" id="slide-9">
@@ -189,8 +189,8 @@ x + "hello"</code></pre>
   <tr><th>Explicit conversion</th><td>The programmer requests it: <code>int(3.7)</code>, <code>float(3)</code>, <code>str(42)</code></td></tr>
   <tr><th>Implicit conversion (coercion)</th><td>The language performs it automatically: <code>2 + 3.0</code></td></tr>
 </table>
-<p>Compare that to <code>2 + "3"</code>, which raises an error rather than silently converting anything — Python coerces int↔float, but it doesn't coerce numbers and strings together.</p>
-<p style="font-size:14px; color:var(--ink-soft);">The point isn't to memorize Python's exact conversion rules — it's to recognize that different languages draw this line in different places.</p>
+<p>Compare that with <code>2 + "3"</code>, which raises an error instead of silently converting anything. Python coerces between <code>int</code> and <code>float</code> in this context, but it doesn't coerce numbers and strings into a common type for <code>+</code>.</p>
+<p style="font-size:14px; color:var(--ink-soft);">The point isn't to memorize every Python conversion rule. It's to recognize that different languages draw this line in different places.</p>
 
 <div class="check open">
   <div class="qlabel">Observe</div>
@@ -204,10 +204,10 @@ x + "hello"</code></pre>
 <div class="page-label">Page 10</div>
 <h2>Type Inference</h2>
 <pre><code>x = 10</code></pre>
-<p>In some statically typed languages, the compiler can infer that <code>x</code> has type <code>int</code> without requiring the programmer to write the type explicitly — just by looking at the value assigned. Once known, that information can flow forward:</p>
+<p>In some statically typed languages, the compiler can infer that <code>x</code> has type <code>int</code> without the programmer writing the type explicitly. It can get that information from the value assigned, and then use it when reasoning about what comes next:</p>
 <pre><code>y = x + 2</code></pre>
 <div class="callout">Does the programmer have to specify the type, or can the language infer it?</div>
-<p style="font-size:14px; color:var(--ink-soft);">Keep this conceptual — this course doesn't get into the formal algorithms real languages use to infer types across a whole program.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Keep this conceptual. We aren't getting into the formal algorithms real languages use to infer types across an entire program.</p>
 
 <div class="check open">
   <div class="qlabel">Predict</div>
@@ -220,8 +220,8 @@ x + "hello"</code></pre>
 <section class="slide" id="slide-11">
 <div class="page-label">Page 11</div>
 <h2>Python's Type System</h2>
-<div class="callout">Python is dynamically typed, and generally does not perform implicit conversions between unrelated types.</div>
-<p style="font-size:14px; color:var(--ink-soft);">Notice what this description avoids: it doesn't call Python "strongly typed." That label gets used constantly, but it doesn't have one universally agreed-on definition — so this course describes what Python actually does instead of reaching for a label people disagree about.</p>
+<div class="callout">Python is dynamically typed, and it generally does not perform implicit conversions between unrelated types.</div>
+<p style="font-size:14px; color:var(--ink-soft);">Notice what this description avoids: it doesn't call Python "strongly typed." That label gets used constantly, but it doesn't have one universally agreed-on definition. So we'll describe what Python actually does instead of relying on a label that people use differently.</p>
 <pre><code>x = 10
 x = "hello"</code></pre>
 <ul>
@@ -238,7 +238,7 @@ x = "hello"</code></pre>
 <h2>Type Annotations Are Not Static Typing</h2>
 <pre><code>x: int = 10</code></pre>
 <p>This looks like it should change how Python runs. It doesn't.</p>
-<p>Type annotations provide information that can be used by:</p>
+<p>So what are type annotations for? They provide information that can be used by:</p>
 <ul>
   <li>type-checking tools (like <code>mypy</code>);</li>
   <li>IDEs, for autocomplete and warnings;</li>
@@ -246,13 +246,13 @@ x = "hello"</code></pre>
   <li>other developers reading the code.</li>
 </ul>
 <div class="callout">Type annotations do not make Python's normal execution model statically typed. Python does not normally enforce annotations at runtime; type-checking tools can use them to detect potential problems before execution.</div>
-<p style="font-size:14px; color:var(--ink-soft);">This is a genuinely important practical distinction — annotated Python code can still raise the same runtime type errors as unannotated code.</p>
+<p style="font-size:14px; color:var(--ink-soft);">This distinction matters in practice: annotated Python code can still raise the same runtime type errors as unannotated code.</p>
 </section>
 
 <section class="slide" id="slide-13">
 <div class="page-label">Page 13</div>
 <h2>Synthesis: What Kind of Typing Is This?</h2>
-<p>Classify each short example — the goal is applying the distinctions from this topic together, not reciting definitions one at a time.</p>
+<p>Let's put the distinctions together. The goal is to apply them, not recite the definitions one at a time.</p>
 
 <div class="check" data-answer="1">
   <div class="qlabel">Classify it</div>
@@ -290,13 +290,13 @@ x = "hello"</code></pre>
 <section class="slide" id="slide-14">
 <div class="page-label">Page 14</div>
 <h2>Types in the Interpreter</h2>
-<p>Topic 4 gave your evaluator this shape:</p>
+<p>Topic 4 gave our evaluator this shape:</p>
 <div class="diagram"><div class="flow">
   <div class="flow-box">AST</div><div class="flow-arrow">↓</div>
   <div class="flow-box process">Evaluator</div><div class="flow-arrow">↓</div>
   <div class="flow-box">Value</div>
 </div></div>
-<p>This topic adds a second question the evaluator eventually has to answer:</p>
+<p>Now this topic adds another set of questions the evaluator eventually has to answer:</p>
 <div class="diagram"><div class="flow">
   <div class="flow-box">AST</div><div class="flow-arrow">↓</div>
   <div class="flow-box process">Evaluator</div><div class="flow-arrow">↓</div>
@@ -308,13 +308,13 @@ x = "hello"</code></pre>
   <li>Is this operation valid for that type?</li>
   <li>What happens if it isn't?</li>
 </ul>
-<div class="callout">This is a concrete, practical reason to care about types — your interpreter has to actually answer these questions, not just define them.</div>
+<div class="callout">This is the practical reason to care about types: the interpreter eventually has to answer these questions, not just talk about them.</div>
 </section>
 
 <section class="slide" id="slide-15">
 <div class="page-label">Page 15</div>
 <h2>Check Your Understanding</h2>
-<p style="font-size:14px; color:var(--ink-soft);">Six questions that ask you to apply this topic's ideas, not just recall definitions. Not graded — just for you to check where things stand before moving on.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Six questions to check whether you can apply the ideas from this topic, not just recall definitions. This isn't graded.</p>
 
 <div class="check open">
   <div class="qlabel">1 · Apply it</div>
@@ -369,7 +369,7 @@ x = "hello"</code></pre>
 <section class="slide" id="slide-16">
 <div class="page-label">Summary</div>
 <h2>The Big Picture</h2>
-<p>This topic's whole arc, in one chain:</p>
+<p>Let's put the whole topic together:</p>
 <div class="diagram">
   <div class="pipeline">
     <div class="artifact">VALUE</div><div class="arr">↓</div>
@@ -386,7 +386,7 @@ x = "hello"</code></pre>
   <tr><th>Topic 5</th><td>value → type → valid operation.</td></tr>
   <tr><th>Topic 6</th><td>value → name → binding → environment.</td></tr>
 </table>
-<div class="callout">Once a value has both a type and a name, the next question is: how does a language keep track of which name refers to which value, and where? That's Topic 6.</div>
+<div class="callout">So far we've asked what a value is, what type it has, and what operations are valid for it. Next we add names: how does a language keep track of which name refers to which value, and where? That's Topic 6.</div>
 </section>
 
 <div class="end-note" id="endNote" style="display:none; text-align:center; padding:40px 24px; color:var(--ink-soft);">
