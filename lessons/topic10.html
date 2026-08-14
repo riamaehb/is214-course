@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IS 214 — Topic 10: Runtime, Interpretation &amp; Python Execution</title>
+<link href="../assets/style.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="topbar">
+<div class="bar-inner">
+<div class="brand">IS 214 · <strong>Topic 10</strong></div>
+<div class="triad-strip"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+<div class="counter"><span id="curNum">1</span> / <span id="totalNum">20</span></div>
+</div>
+</div>
+<div class="wrap">
+<section class="slide active" id="slide-0">
+<div class="hero-inline">
+<div class="eyebrow">IS 214 · TOPIC 10 · STUDY GUIDE</div>
+<h1>Runtime, Interpretation &amp; Python Execution</h1>
+<div class="triad">
+<div class="triad-node syn"><h4>SYNTAX</h4><p>what is valid</p></div>
+<div class="triad-node sem"><h4>SEMANTICS</h4><p>what it means</p></div>
+<div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
+</div>
+</div>
+<p>Nine topics have built up separate mechanisms: syntax, ASTs, semantics, values and types, environments, functions, control flow, objects and memory. This final topic asks the question that ties them all together: <strong>what happens between the program we write and the computation that actually executes?</strong></p>
+<p>The goal isn't compiler construction or Python implementation internals. It's a coherent <strong>runtime model</strong> you can use once you start building your own interpreter.</p>
+<h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
+<ul>
+<li>explain interpretation and compilation as implementation strategies, not fixed language categories;</li>
+<li>describe what a runtime system is and what it's responsible for;</li>
+<li>explain what an intermediate representation is, and why one might be used;</li>
+<li>distinguish the evaluator from the runtime as a whole;</li>
+<li>describe the runtime state a program needs while executing; and</li>
+<li>explain how Topics 2–9 each contribute a piece of the runtime model.</li>
+</ul>
+<p style="font-size:14px; color:var(--ink-soft); margin-top:24px;"><strong>Estimated study time:</strong> 90–120 minutes.</p>
+</section>
+<section class="slide" id="slide-1">
+<div class="page-label">Page 1</div>
+<h2>From Source Code to Execution</h2>
+<pre><code>x = 2 + 3
+print(x)</code></pre>
+<div class="callout">What actually executes this program?</div>
+<div class="diagram"><div class="flow">
+<div class="flow-box">source code</div><div class="flow-arrow">↓</div>
+<div class="flow-box">tokens</div><div class="flow-arrow">↓</div>
+<div class="flow-box">AST</div><div class="flow-arrow">↓</div>
+<div class="flow-box">runtime representation</div><div class="flow-arrow">↓</div>
+<div class="flow-box">runtime</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">execution</div>
+</div></div>
+<p style="font-size:14px; color:var(--ink-soft);">Source code describes a computation. Something has to actually interpret, translate, or otherwise carry out that description — that "something" is what this whole topic is about. This is the master conceptual pipeline for the whole topic; every variant you'll see later (bytecode, virtual machines, other intermediate forms) is a variation of it, not a competing model. A particular implementation may transform the AST into bytecode, machine code, or another intermediate representation before execution — the shape stays the same, only what happens at the "runtime representation" step changes.</p>
+</section>
+<section class="slide" id="slide-2">
+<div class="page-label">Page 2</div>
+<h2>What Is an Interpreter?</h2>
+<div class="callout">An interpreter executes a program by processing a representation of that program and carrying out the corresponding operations.</div>
+<p>This is the exact model you've been building all course:</p>
+<div class="diagram"><div class="flow">
+<div class="flow-box">source</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">parse</div><div class="flow-arrow">↓</div>
+<div class="flow-box">AST</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">evaluate</div><div class="flow-arrow">↓</div>
+<div class="flow-box">runtime effects / results</div>
+</div></div>
+<p style="font-size:14px; color:var(--ink-soft);">This is a conceptual interpreter model — one you'll turn into an actual implementation soon.</p>
+</section>
+<section class="slide" id="slide-3">
+<div class="page-label">Page 3</div>
+<h2>What Is a Compiler?</h2>
+<div class="callout">A compiler translates a program from one representation into another that can subsequently be executed or further processed.</div>
+<div class="diagram"><div class="flow">
+<div class="flow-box">source</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">compiler</div><div class="flow-arrow">↓</div>
+<div class="flow-box">target representation</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">execution</div>
+</div></div>
+<p>Compare the two shapes directly:</p>
+<div class="lang-grid">
+<div class="lang-card"><h4>Interpreter</h4><div class="tree">program representation<br/>↓<br/>execute</div></div>
+<div class="lang-card"><h4>Compiler</h4><div class="tree">source<br/>↓<br/>translate<br/>↓<br/>target representation<br/>↓<br/>execute</div></div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">Keep both of these conceptual — the point is the shape of the process, not implementation detail.</p>
+</section>
+<section class="slide" id="slide-4">
+<div class="page-label">Page 4</div>
+<h2>Interpretation and Compilation Are Implementation Strategies</h2>
+<div class="callout">Explicitly avoid: "some languages are interpreted and some are compiled."</div>
+<p>That framing treats interpretation and compilation as fixed properties of a language. They aren't — they're <strong>implementation strategies</strong>, and modern runtimes often combine them:</p>
+<div class="lang-grid">
+<div class="lang-card"><h4>Pure interpretation</h4><div class="tree">source<br/>↓<br/>interpreter</div></div>
+<div class="lang-card"><h4>Pure compilation</h4><div class="tree">source<br/>↓<br/>compiler<br/>↓<br/>machine code</div></div>
+</div>
+<div class="lang-card" style="margin-top:16px;"><h4>Compile to an intermediate form, then interpret that</h4><div class="tree">source<br/>↓<br/>compiler<br/>↓<br/>bytecode / intermediate representation<br/>↓<br/>virtual machine</div></div>
+<div class="callout">A programming language itself is not inherently "interpreted" or "compiled." Its implementations choose a strategy.</div>
+</section>
+<section class="slide" id="slide-5">
+<div class="page-label">Page 5</div>
+<h2>What Is a Runtime System?</h2>
+<div class="callout">The runtime is the machinery that supports program execution.</div>
+<p>A runtime may need to manage: environments and bindings, function calls, objects, memory, control flow, exceptions, and the execution of program representations. You've already met every one of these pieces:</p>
+<div class="diagram">
+<div class="pipeline">
+<div class="artifact">TOPIC 6: environments</div><div class="arr">↓</div>
+<div class="artifact">TOPIC 7: function calls</div><div class="arr">↓</div>
+<div class="artifact">TOPIC 8: control flow / exceptions</div><div class="arr">↓</div>
+<div class="artifact">TOPIC 9: objects / memory</div><div class="arr">↓</div>
+<div class="process p2">RUNTIME</div>
+</div>
+</div>
+<div class="callout">The runtime coordinates the mechanisms needed to make the language's semantics happen during execution.</div>
+</section>
+<section class="slide" id="slide-6">
+<div class="page-label">Page 6</div>
+<h2>Virtual Machines</h2>
+<div class="callout">A virtual machine provides an abstract execution environment for a program representation.</div>
+<div class="diagram"><div class="flow">
+<div class="flow-box">source</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">compiler</div><div class="flow-arrow">↓</div>
+<div class="flow-box">bytecode / intermediate representation</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">virtual machine</div><div class="flow-arrow">↓</div>
+<div class="flow-box">execution</div>
+</div></div>
+<p>Why bother with this extra layer?</p>
+<ul>
+<li>it provides an abstract execution target;</li>
+<li>it separates language implementation concerns from any one physical CPU;</li>
+<li>it can execute an intermediate representation directly.</li>
+</ul>
+<p style="font-size:14px; color:var(--ink-soft);">We won't go into detailed JVM or VM architecture — the shape of the idea is what matters here.</p>
+</section>
+<section class="slide" id="slide-7">
+<div class="page-label">Page 7</div>
+<h2>Intermediate Representations and Bytecode</h2>
+<p>A language implementation may transform source code into another representation before execution:</p>
+<div class="diagram"><div class="flow">
+<div class="flow-box">source</div><div class="flow-arrow">↓</div>
+<div class="flow-box">AST</div><div class="flow-arrow">↓</div>
+<div class="flow-box">intermediate representation</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">execution</div>
+</div></div>
+<p>Bytecode is one example — illustrative only, not something to memorize:</p>
+<pre><code>LOAD 2
+LOAD 3
+ADD
+STORE x</code></pre>
+<div class="callout">Illustrative pseudo-bytecode — not actual Python bytecode.</div>
+<div class="callout">Why might a runtime execute an intermediate representation rather than the original source text?</div>
+<p style="font-size:14px; color:var(--ink-soft);">An intermediate form can be simpler to execute quickly, easier to optimize, and independent of exactly how the source was written — the AST's shape doesn't have to be what actually gets run.</p>
+</section>
+<section class="slide" id="slide-7b">
+<div class="page-label">Page 8</div>
+<h2>What Does a Compiler's Back End Actually Do?</h2>
+<p>You've already seen Page 7's bytecode as a target representation. But where did it come from? A compiler doesn't just relabel the AST — it generates new instructions, and often rewrites them to run faster. Two techniques do most of that work.</p>
+<p><strong>Code generation</strong> walks the AST, or an intermediate form, and emits instructions for a target machine — real hardware, or an abstract one like a virtual machine. Page 7's bytecode is exactly this kind of output.</p>
+<p><strong>Optimization</strong> then looks for instructions it can improve without changing what the program computes. Take Page 7's own bytecode:</p>
+<pre><code>LOAD 2
+LOAD 3
+ADD
+STORE x</code></pre>
+<p>Notice that <code>2</code> and <code>3</code> are literal values, known at compile time. An optimizer can compute <code>2 + 3</code> once, ahead of time, and emit just:</p>
+<pre><code>LOAD 5
+STORE x</code></pre>
+<p>That's called <strong>constant folding</strong> — one of many optimizations a back end might apply. Others remove code that can never run (<strong>dead-code elimination</strong>), or avoid recomputing a value more than once.</p>
+<p>Keep this at awareness level: the interpreter you build in this course stays an interpreter. It executes a representation directly, rather than compiling and optimizing it first. What matters here is knowing the back end exists, and roughly what it does — that's enough to place any given language implementation on the spectrum from Page 4.</p>
+<div class="check" data-answer="2">
+<div class="qlabel">Check your understanding</div>
+<div class="qtext"><code>LOAD 10</code><br/><code>LOAD 0</code><br/><code>MULTIPLY</code><br/><code>STORE total</code><br/>Which optimization would let a compiler replace this whole sequence with just <code>LOAD 0</code> / <code>STORE total</code>?</div>
+<div class="opt-row"><button class="opt">Dead-code elimination — this code never runs</button><div class="opt-fb">Not quite — this code does run; the issue isn't that it's unreachable.</div></div>
+<div class="opt-row"><button class="opt">Code generation — picking a different target instruction</button><div class="opt-fb">Not quite — code generation decides what instructions to emit in the first place; it doesn't simplify a computation whose result is already known.</div></div>
+<div class="opt-row"><button class="opt">Constant folding — anything multiplied by 0 is 0, computable at compile time</button><div class="opt-fb">Correct — both operands are known literals, so the compiler can compute <code>10 * 0</code> once, ahead of time, and skip the multiplication at runtime.</div></div>
+<div class="fb"></div>
+</div>
+</section>
+<section class="slide" id="slide-8">
+<div class="page-label">Page 9</div>
+<h2>Python's Execution Model</h2>
+<div class="diagram"><div class="flow">
+<div class="flow-box">Python source</div><div class="flow-arrow">↓</div>
+<div class="flow-box">Python implementation</div><div class="flow-arrow">↓</div>
+<div class="flow-box">intermediate representation</div><div class="flow-arrow">↓</div>
+<div class="flow-box">Python runtime</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">execution</div>
+</div></div>
+<div class="callout">CPython commonly compiles Python source into bytecode that's executed by its virtual machine. Other Python implementations may use different strategies entirely.</div>
+<p style="font-size:14px; color:var(--ink-soft);">The point isn't to teach CPython internals — it's to recognize Python fits the exact strategy-not-category picture from Page 4: source compiled to an intermediate form, then run by a virtual machine. Any specific bytecode shown here is optional and illustrative, not required material.</p>
+</section>
+<section class="slide" id="slide-8b">
+<div class="page-label">Page 10</div>
+<h2>One Instruction Stream, or Many?</h2>
+<p>Every runtime model in this topic assumes one thing happens at a time — one runtime, executing one instruction stream, one step after another. Is that the only option? No. It's a design choice.</p>
+<p>A language implementation can instead run multiple instruction streams at once:</p>
+<ul>
+<li><strong>threads</strong> — multiple streams sharing the same memory within one process;</li>
+<li><strong>processes</strong> — multiple independent runtimes, each with its own memory;</li>
+<li><strong>async tasks</strong> — many logical streams cooperatively interleaved on a single thread.</li>
+</ul>
+<p>Python's own execution model, from the page before this one, has a well-known wrinkle here. CPython's <strong>Global Interpreter Lock (GIL)</strong> allows only one thread to execute Python bytecode at a time — even on a machine with many CPU cores. You can spin up multiple Python threads, but they take turns. They don't run Python code simultaneously.</p>
+<p>So why do CPU-heavy Python programs often reach for multiple processes instead of multiple threads? Because separate processes each get their own interpreter, and their own GIL — so they really can run in parallel. Threads still earn their keep when a task spends most of its time waiting, for a file or a network response, rather than computing.</p>
+<p>Keep this at awareness level. The interpreter you build in this course, like the runtime model in the rest of this topic, stays sequential — one stream, one step at a time. What matters is recognizing that this is a choice, and knowing what changes when it isn't.</p>
+<div class="check" data-answer="0">
+<div class="qlabel">Check your understanding</div>
+<div class="qtext">Why might a CPU-bound Python program use multiple processes rather than multiple threads to run faster?</div>
+<div class="opt-row"><button class="opt">The GIL lets only one thread run Python bytecode at a time, but each process gets its own GIL</button><div class="opt-fb">Correct — threads share one interpreter and one GIL, so they take turns; separate processes each get an independent interpreter, so they can genuinely execute at the same time.</div></div>
+<div class="opt-row"><button class="opt">Threads can only be used for network or file operations, never computation</button><div class="opt-fb">Not quite — threads can run any code; the GIL just prevents more than one from executing Python bytecode simultaneously. That's a real limitation for CPU-bound work, not a rule against trying.</div></div>
+<div class="opt-row"><button class="opt">Processes always run faster than threads, regardless of what the program does</button><div class="opt-fb">Not quite — for tasks that spend most of their time waiting rather than computing, threads work fine and processes add unnecessary overhead.</div></div>
+<div class="fb"></div>
+</div>
+</section>
+<section class="slide" id="slide-9">
+<div class="page-label">Page 11</div>
+<h2>Source → AST → Runtime</h2>
+<p>Back to Topics 2 and 3. You already know:</p>
+<div class="diagram"><div class="flow">
+<div class="flow-box">source</div><div class="flow-arrow">↓</div>
+<div class="flow-box">tokens</div><div class="flow-arrow">↓</div>
+<div class="flow-box">AST</div>
+</div></div>
+<p>Now extend it one step further:</p>
+<div class="diagram"><div class="flow">
+<div class="flow-box">source</div><div class="flow-arrow">↓</div>
+<div class="flow-box">tokens</div><div class="flow-arrow">↓</div>
+<div class="flow-box">AST</div><div class="flow-arrow">↓</div>
+<div class="flow-box">runtime representation</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">execution</div>
+</div></div>
+<p style="font-size:14px; color:var(--ink-soft);">This is one conceptual implementation path, not a universal pipeline — a real implementation might transform the AST into bytecode or another intermediate representation before execution. The point is seeing how Topics 2 and 3's syntax and parsing work eventually feeds into execution.</p>
+</section>
+<section class="slide" id="slide-10">
+<div class="page-label">Page 12</div>
+<h2>The Evaluator as a Runtime Component</h2>
+<div class="callout">The evaluator is one component of a runtime model. It is not the entire runtime.</div>
+<div class="diagram"><div class="flow">
+<div class="flow-box">AST node</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">evaluator</div><div class="flow-arrow">↓</div>
+<div class="flow-box">value / runtime effect</div>
+</div></div>
+<p>A complete runtime also has to manage environments, function calls, objects, control flow, exceptions, and memory — while the evaluator's specific job is determining the meaning or effect of program constructs as they're executed.</p>
+<p style="font-size:14px; color:var(--ink-soft);">Worth sitting with: your interpreter project is going to involve considerably more than writing an expression evaluator.</p>
+</section>
+<section class="slide" id="slide-11">
+<div class="page-label">Page 13</div>
+<h2>Evaluation, Execution, and Runtime State</h2>
+<table>
+<tr><th>Evaluation</th><td>expression → evaluate → produce a value or effect</td></tr>
+<tr><th>Execution</th><td>program → execute → a whole sequence of evaluations, state changes, control-flow decisions, calls, and effects</td></tr>
+</table>
+<p style="font-size:14px; color:var(--ink-soft);">These are useful working distinctions for this course, not a claim that all of language theory draws the line exactly here.</p>
+<div class="callout">Carrying out that sequence requires maintaining runtime state.</div>
+<div class="diagram">
+<div style="display:flex; gap:20px; justify-content:center; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:13px;">
+<div style="border:1.5px solid var(--syntax); border-radius:8px; padding:12px 16px; background:var(--syntax-bg);">environments<br/>↓<br/>bindings</div>
+<div style="border:1.5px solid var(--semantics); border-radius:8px; padding:12px 16px; background:var(--semantics-bg);">objects<br/>↓<br/>memory</div>
+<div style="border:1.5px solid var(--execution); border-radius:8px; padding:12px 16px; background:var(--execution-bg);">control state<br/>↓<br/>execution path</div>
+</div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">Environments → where names are bound (Topic 6). Function calls → active call state (Topic 7). Control flow → what executes next (Topic 8). Objects and memory → runtime values, references, lifetime (Topic 9). This is the central integration point of the whole topic.</p>
+</section>
+<section class="slide" id="slide-12">
+<div class="page-label">Page 14</div>
+<h2>How Topics 2–9 Fit Together</h2>
+<table>
+<tr><th>Topic</th><th>Runtime contribution</th></tr>
+<tr><td>2</td><td>Lexer and token stream</td></tr>
+<tr><td>3</td><td>Parser and AST</td></tr>
+<tr><td>4</td><td>Evaluator / expression semantics</td></tr>
+<tr><td>5</td><td>Type rules and operation validity</td></tr>
+<tr><td>6</td><td>Environments and name lookup</td></tr>
+<tr><td>7</td><td>Call environments and returns</td></tr>
+<tr><td>8</td><td>Control flow and exception handling</td></tr>
+<tr><td>9</td><td>Objects, references, and memory</td></tr>
+<tr><td><strong>10</strong></td><td><strong>Runtime system coordinating all of the above</strong></td></tr>
+</table>
+<div class="callout">Why did we spend nine topics learning all these separate mechanisms?</div>
+<p style="font-size:15px;">Because together, they form the conceptual machinery required to execute a programming language. Nothing you learned in Topics 2 through 9 was a detour — each one is a piece this runtime model needed.</p>
+</section>
+<section class="slide" id="slide-13">
+<div class="page-label">Page 15</div>
+<h2>Runtime Mechanics, Revisited</h2>
+<p>Three quick integration checks — connecting the runtime-state idea to what each earlier topic already taught.</p>
+<h3 style="font-size:16px; margin:20px 0 6px; color:var(--syntax);">Function calls (Topic 7)</h3>
+<pre><code>def square(x):
+    return x * x
+result = square(4)</code></pre>
+<div class="diagram" style="text-align:left; margin:12px 0;"><div class="tree">function value → function call → call environment → parameter binding → expression evaluation → return value → result binding</div></div>
+<h3 style="font-size:16px; margin:20px 0 6px; color:var(--semantics);">Control flow and exceptions (Topic 8)</h3>
+<pre><code>try:
+    x = 10 / 0
+except ZeroDivisionError:
+    x = 0</code></pre>
+<div class="diagram" style="text-align:left; margin:12px 0;"><div class="tree">normal execution → exception raised → current path interrupted → handler located → handler executes → execution continues</div></div>
+<p style="font-size:14px; color:var(--ink-soft);">Control flow and exception handling aren't merely syntax — the runtime has to provide the mechanisms that make their semantics actually happen.</p>
+<h3 style="font-size:16px; margin:20px 0 6px; color:var(--execution);">Objects and memory (Topic 9)</h3>
+<div class="diagram" style="text-align:left; margin:12px 0;"><div class="tree">object creation → runtime object exists → references / reachability → object no longer needed → storage may be reclaimed</div></div>
+<p style="font-size:14px; color:var(--ink-soft);">This is integration, not a second garbage-collection lesson — the point is seeing it as one more thing the runtime is responsible for.</p>
+</section>
+<section class="slide" id="slide-14">
+<div class="page-label">Page 16</div>
+<h2>The Runtime as an Abstract Machine</h2>
+<div class="callout">A runtime can be viewed as an abstract machine that maintains state and performs transitions as a program executes.</div>
+<div class="diagram"><div class="flow">
+<div class="flow-box">runtime state S</div><div class="flow-arrow">↓</div>
+<div class="flow-box">next operation</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">runtime transition</div><div class="flow-arrow">↓</div>
+<div class="flow-box">new runtime state S'</div>
+</div></div>
+<p>For example:</p>
+<div class="diagram"><div class="flow">
+<div class="flow-box">environment + objects + control state</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">execute one step</div><div class="flow-arrow">↓</div>
+<div class="flow-box">updated environment + objects + control state</div>
+</div></div>
+<p style="font-size:14px; color:var(--ink-soft);">Keep this intuitive — no formal transition notation, no separate formal-semantics framework needed here.</p>
+</section>
+<section class="slide" id="slide-15">
+<div class="page-label">Page 17</div>
+<h2>Hands-On: Execution-Model Trace</h2>
+<pre><code>x = 2
+if x &gt; 1:
+    y = x + 3
+print(y)</code></pre>
+<p>Work through, in order: the source representation, the relevant AST structures, which expressions must be evaluated, how the environment changes, which branch gets selected, and the final runtime state.</p>
+<div class="check open">
+<div class="qlabel">Trace it</div>
+<div class="qtext">Walk through all six, then check your answers.</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">
+<strong>1. Source:</strong> four statements — an assignment, a conditional, an assignment inside it, and a call.<br/><br/>
+<strong>2. AST structures:</strong> an Assignment node for <code>x = 2</code>, an If node with condition <code>x &gt; 1</code> and a body containing another Assignment, and a function-call expression for <code>print(y)</code>.<br/><br/>
+<strong>3. Expressions evaluated:</strong> the literal <code>2</code>; the comparison <code>x &gt; 1</code>; the expression <code>x + 3</code>; the lookup of <code>y</code> when <code>print</code> is called.<br/><br/>
+<strong>4. Environment changes:</strong> <code>x → 2</code> after the first line; <code>y → 5</code> after the branch body runs.<br/><br/>
+<strong>5. Branch selection:</strong> <code>x &gt; 1</code> evaluates to True (2 &gt; 1), so the <code>if</code> body executes — <code>y</code> gets bound.<br/><br/>
+<strong>6. Final runtime state:</strong> environment holds <code>x → 2, y → 5</code>; <code>5</code> gets printed.
+  </div>
+</div>
+</section>
+<section class="slide" id="slide-16">
+<div class="page-label">Page 18</div>
+<h2>Hands-On: Conceptual Function-Call Trace</h2>
+<pre><code>def square(x):
+    return x * x
+
+result = square(4)</code></pre>
+<div class="diagram" style="text-align:left;">
+<div class="tree">
+    source<br/>↓<br/>AST<br/>↓<br/>function value (square)<br/>↓<br/>function call<br/>↓<br/>call environment<br/>↓<br/>x → 4<br/>↓<br/>x * x<br/>↓<br/>16<br/>↓<br/>result → 16
+  </div>
+</div>
+<div class="callout">Which parts of this trace would our interpreter eventually have to implement?</div>
+<div class="check open">
+<div class="qlabel">Think about it</div>
+<div class="qtext">Look back at the trace above — name at least three distinct pieces of machinery it depends on.</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">At minimum: a parser to turn the source into an AST; an evaluator that recognizes a function-call node and knows to create a call environment; an environment structure that supports parameter binding and lookup; and a way of returning a value back out of that call environment into the caller's. This is genuinely a miniature version of the interpreter you're about to build — nothing here is new machinery, just familiar pieces working together in one trace.</div>
+</div>
+</section>
+<section class="slide" id="slide-17">
+<div class="page-label">Page 19</div>
+<h2>From the Conceptual Model to the Interpreter Ahead</h2>
+<p>The purpose of the first ten topics, laid out as one chain:</p>
+<div class="diagram">
+<div class="pipeline">
+<div class="artifact">LEXER</div><div class="arr">↓</div>
+<div class="artifact">PARSER</div><div class="arr">↓</div>
+<div class="artifact">AST</div><div class="arr">↓</div>
+<div class="artifact">ENVIRONMENT</div><div class="arr">↓</div>
+<div class="artifact">RUNTIME OBJECTS</div><div class="arr">↓</div>
+<div class="artifact">EVALUATOR</div><div class="arr">↓</div>
+<div class="artifact">CONTROL FLOW</div><div class="arr">↓</div>
+<div class="artifact">FUNCTIONS</div><div class="arr">↓</div>
+<div class="artifact">EXCEPTIONS</div><div class="arr">↓</div>
+<div class="artifact">EXECUTION</div>
+</div>
+</div>
+<div class="callout">The project ahead turns these conceptual models into an executable system.</div>
+<p style="font-size:14px; color:var(--ink-soft);">Building an interpreter isn't a new topic bolted onto the end of the course. It's the integration of everything you've already studied — every piece in the chain above already has a name you recognize.</p>
+</section>
+<section class="slide" id="slide-18">
+<div class="page-label">Page 20</div>
+<h2>Check Your Understanding</h2>
+<p style="font-size:14px; color:var(--ink-soft);">Eleven questions covering this topic. Not graded — just for you to check where things stand before moving on.</p>
+<div class="check open">
+<div class="qlabel">1 · Interpreter</div>
+<div class="qtext">What is an interpreter, conceptually?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">Something that executes a program by processing a representation of it and carrying out the operations that representation describes.</div>
+</div>
+<div class="check open" style="margin-top:16px;">
+<div class="qlabel">2 · Compiler</div>
+<div class="qtext">What is a compiler, conceptually?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">Something that translates a program from one representation into another — source into bytecode, or into machine code — that can then be executed or processed further, separately from the translation step itself.</div>
+</div>
+<div class="check open" style="margin-top:16px;">
+<div class="qlabel">3 · Strategies, not categories</div>
+<div class="qtext">Why are "interpreted language" and "compiled language" not fixed categories?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">Because interpretation and compilation are implementation strategies, not properties baked into a language itself. The same language can have multiple implementations that choose different strategies — including ones that combine both, like compiling to bytecode and then interpreting that bytecode with a virtual machine.</div>
+</div>
+<div class="check open" style="margin-top:16px;">
+<div class="qlabel">4 · Runtime system</div>
+<div class="qtext">What is a runtime system responsible for?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">Coordinating all the mechanisms needed to make a language's semantics actually happen during execution — environments and bindings, function calls, objects, memory, control flow, exceptions, and the execution of whatever representation the program has been turned into.</div>
+</div>
+<div class="check open" style="margin-top:16px;">
+<div class="qlabel">5 · Intermediate representation</div>
+<div class="qtext">What is an intermediate representation, and why might a runtime use one instead of the original source text?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">A form the program gets translated into before execution — like bytecode — sitting somewhere between source code and final execution. A runtime might use one because it can be simpler or faster to execute, easier to optimize, and independent of exactly how the original source was written.</div>
+</div>
+<div class="check open" style="margin-top:16px;">
+<div class="qlabel">6 · Virtual machine</div>
+<div class="qtext">What is a virtual machine, conceptually?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">An abstract execution environment for a program representation — it gives a language implementation a consistent target to run on, separate from the details of any one physical CPU, and can execute an intermediate representation directly.</div>
+</div>
+<div class="check open" style="margin-top:16px;">
+<div class="qlabel">7 · The evaluator's role</div>
+<div class="qtext">What's the difference between the evaluator and the runtime as a whole?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">The evaluator is one component of the runtime — the part that determines the meaning or effect of a construct as it executes. The full runtime is bigger than that: it also has to manage environments, function calls, objects, control flow, exceptions, and memory.</div>
+</div>
+<div class="check open" style="margin-top:16px;">
+<div class="qlabel">8 · Runtime state</div>
+<div class="qtext">What kinds of runtime state does a program need while it executes?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">At minimum: environments holding current bindings, objects with their own identity and state, and control state tracking what executes next. All three change as execution proceeds — that changing state is what "execution" actually consists of.</div>
+</div>
+<div class="check open" style="margin-top:16px;">
+<div class="qlabel">9 · Topics 6–9's contribution</div>
+<div class="qtext">In one sentence each, what did Topics 6 through 9 each contribute to this topic's runtime model?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">Topic 6: environments and how names get bound and looked up. Topic 7: call environments and how function calls fit into that same model. Topic 8: control flow and how execution decides what happens next, including exceptions. Topic 9: objects, references, and how memory relates to what's still reachable.</div>
+</div>
+<div class="check open" style="margin-top:16px;">
+<div class="qlabel">10 · Compiler back end</div>
+<div class="qtext">What's the difference between code generation and optimization in a compiler's back end?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">Code generation produces the target instructions from the AST or an intermediate form in the first place. Optimization then looks for ways to improve those instructions — like constant folding or dead-code elimination — without changing what the program computes.</div>
+</div>
+<div class="check open" style="margin-top:16px;">
+<div class="qlabel">11 · Sequential vs. concurrent execution</div>
+<div class="qtext">Why does CPython's GIL mean Python threads don't give CPU-bound code real parallelism?</div>
+<button class="reveal-btn">Reveal answer</button>
+<div class="reveal-content">The GIL allows only one thread to execute Python bytecode at a time, even with multiple threads and multiple CPU cores — threads take turns rather than truly running simultaneously. That's why CPU-bound Python code often uses separate processes instead, since each process gets its own interpreter and its own GIL.</div>
+</div>
+<div class="qbox" style="margin-top:24px;">
+<div class="qlabel">Final synthesis</div>
+<p style="margin-bottom:0;"><strong>If an interpreter is an executable model of a programming language, what parts of the language have we already learned how to model?</strong></p>
+<button class="reveal-btn" style="margin-top:14px;">Reveal answer</button>
+<div class="reveal-content">Syntax, ASTs, semantics, values and types, environments, functions, control flow, exceptions, objects, references, memory, and runtime state — all ten topics, each contributing a piece of the model the interpreter project turns into something that actually runs.</div>
+</div>
+</section>
+<section class="slide" id="slide-19">
+<div class="page-label">Summary</div>
+<h2>The Big Picture</h2>
+<p>The conceptual spine of this entire topic:</p>
+<div class="diagram"><div class="flow">
+<div class="flow-box">what we write</div><div class="flow-arrow">↓</div>
+<div class="flow-box">source code</div><div class="flow-arrow">↓</div>
+<div class="flow-box">language representation</div><div class="flow-arrow">↓</div>
+<div class="flow-box">runtime mechanisms</div><div class="flow-arrow">↓</div>
+<div class="flow-box">runtime state</div><div class="flow-arrow">↓</div>
+<div class="flow-box process">execution</div>
+</div></div>
+<p>And the shape of the whole course:</p>
+<table>
+<tr><th>Topics 1–9</th><td>What is a programming language, and how does it behave?</td></tr>
+<tr><th>Topic 10</th><td>How can a runtime make that behavior happen?</td></tr>
+<tr><th>Ahead</th><td>How do we build one?</td></tr>
+</table>
+<div class="callout">We now have the conceptual pieces. The remaining question is: can we make them execute?</div>
+<p style="font-size:14px; color:var(--ink-soft);">Everything from here on is integration, not new theory — turning ten topics' worth of models into a working system.</p>
+</section>
+<!-- IMPORTANT: end-note must go here, INSIDE .wrap, BEFORE the closing </div> below.
+     Putting it after </div> breaks the fixed-height layout (a bug hit 5 times across
+     topics 1/3/4/5 before this template was fixed) -->
+<div class="end-note" id="endNote" style="display:none; text-align:center; padding:40px 24px; color:var(--ink-soft);">
+<h3 style="font-size:22px; margin-bottom:10px;">End of Topic 10</h3>
+<p>Use Previous to review any page.</p>
+</div>
+</div>
+<div class="navbar">
+<div class="bar-inner">
+<button class="navbtn secondary" id="prevBtn">← Previous</button>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<button class="navbtn" id="nextBtn">Next →</button>
+</div>
+</div>
+<script src="../assets/lesson.js"></script>
+</body>
+</html>

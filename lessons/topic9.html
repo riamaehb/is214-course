@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 — Topic 9: Objects, References, Mutability &amp; Memory</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="bar-inner">
+    <div class="brand">IS 214 · <strong>Topic 9</strong></div>
+    <div class="triad-strip"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+    <div class="counter"><span id="curNum">1</span> / <span id="totalNum">18</span></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section class="slide active" id="slide-0">
+  <div class="hero-inline">
+    <div class="eyebrow">IS 214 · TOPIC 9 · STUDY GUIDE</div>
+    <h1>Objects, References, Mutability &amp; Memory</h1>
+    <div class="triad">
+      <div class="triad-node syn"><h4>SYNTAX</h4><p>what is valid</p></div>
+      <div class="triad-node sem"><h4>SEMANTICS</h4><p>what it means</p></div>
+      <div class="triad-node exe"><h4>EXECUTION</h4><p>what happens</p></div>
+    </div>
+  </div>
+  <p>Topic 6 established names, bindings, scope, and environments. Topic 7 showed how function calls create environments and bindings. Topic 8 focused on what executes next. This topic asks: <strong>what are the runtime objects those bindings refer to, and what happens when multiple names refer to the same object?</strong></p>
+  <div class="callout">Rebinding changes what a name refers to. Mutation changes the object itself.</div>
+  <h3 style="font-size:18px; margin:32px 0 14px;">By the end of this topic, you should be able to</h3>
+  <ul>
+    <li>distinguish a name, a reference, and an object;</li>
+    <li>distinguish equality from identity;</li>
+    <li>explain aliasing, and predict its effects;</li>
+    <li>distinguish rebinding a name from mutating an object;</li>
+    <li>explain why mutation inside a function can affect the caller's object;</li>
+    <li>distinguish a shallow copy from a deep copy; and</li>
+    <li>explain reachability and its relationship to memory reclamation.</li>
+  </ul>
+  <p style="font-size:14px; color:var(--ink-soft); margin-top:24px;"><strong>Estimated study time:</strong> 90–120 minutes.</p>
+</section>
+
+<section class="slide" id="slide-1">
+<div class="page-label">Page 1</div>
+<h2>The Object Behind the Binding</h2>
+<pre><code>x = 10
+items = [1, 2, 3]</code></pre>
+<div class="callout">What do x and items actually refer to?</div>
+<div class="diagram"><div class="flow">
+  <div class="flow-box">name</div><div class="flow-arrow">↓</div>
+  <div class="flow-box process">reference</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">object</div>
+</div></div>
+<p style="font-size:14px; color:var(--ink-soft);">These diagrams are a <strong>conceptual runtime model</strong> — a way of reasoning about behavior, not a literal claim about how Python actually lays things out in memory. Topic 6 explained how names get bound. This topic looks at the objects on the other end of that binding.</p>
+</section>
+
+<section class="slide" id="slide-2">
+<div class="page-label">Page 2</div>
+<h2>Objects Have Identity</h2>
+<pre><code>a = [1, 2, 3]
+b = [1, 2, 3]</code></pre>
+<div class="callout">Same values. Are they the same object?</div>
+<p>No — <code>a</code> and <code>b</code> refer to two distinct objects that happen to contain equal values. Every object has:</p>
+<table>
+  <tr><th>Identity</th><td>which specific object this is</td></tr>
+  <tr><th>Value / state</th><td>what it currently contains</td></tr>
+</table>
+<p>Add a third name:</p>
+<pre><code>c = a</code></pre>
+
+<div class="check open">
+  <div class="qlabel">Predict</div>
+  <div class="qtext">Predict each of these: <code>a == b</code>, <code>a is b</code>, <code>c == a</code>, <code>c is a</code>.</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>a == b</code> → True (equal values). <code>a is b</code> → False (different objects). <code>c == a</code> → True (equal values, and also the same object). <code>c is a</code> → True — <code>c = a</code> didn't create a new object, it bound <code>c</code> to the exact same one <code>a</code> already refers to.</div>
+</div>
+<div class="callout"><code>==</code> asks about equality. <code>is</code> asks about identity. The emphasis is on the underlying concepts, not memorizing which operator does which.</div>
+</section>
+
+<section class="slide" id="slide-3">
+<div class="page-label">Page 3</div>
+<h2>References and Aliasing</h2>
+<pre><code>a = [1, 2, 3]
+b = a</code></pre>
+<div class="diagram">
+  <div style="display:flex; align-items:center; justify-content:center; gap:0; font-family:'IBM Plex Mono',monospace;">
+    <div style="display:flex; flex-direction:column; gap:24px;">
+      <div style="border:1.5px solid var(--ink); border-radius:6px; padding:8px 16px;">a</div>
+      <div style="border:1.5px solid var(--ink); border-radius:6px; padding:8px 16px;">b</div>
+    </div>
+    <div style="font-size:20px; color:var(--ink-soft); padding:0 16px;">→</div>
+    <div style="border:1.5px solid var(--syntax); border-radius:8px; padding:16px 24px; background:var(--syntax-bg);">[1, 2, 3]</div>
+  </div>
+</div>
+<div class="callout">One object can be accessible through multiple names. This is called aliasing.</div>
+<pre><code>b.append(4)</code></pre>
+
+<div class="check open">
+  <div class="qlabel">Predict</div>
+  <div class="qtext">What does <code>a</code> refer to now?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>[1, 2, 3, 4]</code>. <code>a</code> and <code>b</code> alias the same object, so a change made through <code>b</code> is visible through <code>a</code> too — there was never a copy to begin with. This is the first real consequence of shared mutable state.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-4">
+<div class="page-label">Page 4</div>
+<h2>Hands-On: Identity and Aliasing</h2>
+<pre><code>a = [1, 2, 3]
+b = a
+c = a.copy()</code></pre>
+<p>Predict, before checking:</p>
+<pre><code>a is b
+a is c
+a == b
+a == c</code></pre>
+
+<div class="check open">
+  <div class="qlabel">Predict</div>
+  <div class="qtext">What are the four results?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>a is b</code> → True (b is an alias of a). <code>a is c</code> → False (.copy() made a distinct object). <code>a == b</code> → True — the same list, so trivially equal to itself. <code>a == c</code> → True — a distinct object, but with contents that happen to be equal.</div>
+</div>
+<pre><code>b.append(4)</code></pre>
+<div class="check open">
+  <div class="qlabel">Draw it</div>
+  <div class="qtext">After this line, sketch the object/reference diagram — how many list objects exist, and which names point to which?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Two list objects exist. <code>a</code> and <code>b</code> both point to the first one, now <code>[1, 2, 3, 4]</code> after the mutation. <code>c</code> points to the second, independent object, still <code>[1, 2, 3]</code> — completely unaffected by <code>b.append(4)</code>.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-5">
+<div class="page-label">Page 5</div>
+<h2>Rebinding vs. Mutation</h2>
+<p>The central distinction of this entire topic. Compare:</p>
+<div class="lang-grid">
+  <div class="lang-card"><h4>Rebinding</h4><pre><code>a = [1, 2, 3]
+b = a
+b = [4, 5, 6]</code></pre></div>
+  <div class="lang-card"><h4>Mutation</h4><pre><code>a = [1, 2, 3]
+b = a
+b.append(4)</code></pre></div>
+</div>
+<table>
+  <tr><td>Rebinding</td><td><code>b = [4, 5, 6]</code> points <code>b</code> at a brand-new object. <code>a</code> still points at the original — completely unaffected.</td></tr>
+  <tr><td>Mutation</td><td><code>b.append(4)</code> changes the object <code>b</code> (and <code>a</code>) already point to. Both names now see the change.</td></tr>
+</table>
+<div class="callout">Rebinding changes what a name refers to. Mutation changes the object itself.</div>
+<p style="font-size:14px; color:var(--ink-soft);">Given any operation from here on, ask exactly one question: did a <em>binding</em> change, or did an <em>object's state</em> change?</p>
+</section>
+
+<section class="slide" id="slide-6">
+<div class="page-label">Page 6</div>
+<h2>Hands-On: Rebinding vs. Mutation</h2>
+<pre><code>def rebind(items):
+    items = ["new"]
+
+def mutate(items):
+    items.append("new")
+
+values = ["old"]
+rebind(values)
+print(values)</code></pre>
+
+<div class="check" data-answer="0">
+  <div class="qlabel">Predict</div>
+  <div class="qtext">What does <code>print(values)</code> show after <code>rebind(values)</code>?</div>
+  <div class="opt-row"><button class="opt">['old']</button><div class="opt-fb">Correct — inside rebind, items = ["new"] just points the local name items at a new object. values, outside the function, was never touched.</div></div>
+  <div class="opt-row"><button class="opt">['new']</button><div class="opt-fb">Not quite — that would be true if items.append("new") had run instead. Plain assignment inside the function only rebinds the local parameter name.</div></div>
+  <div class="fb"></div>
+</div>
+
+<pre><code>values = ["old"]
+mutate(values)
+print(values)</code></pre>
+
+<div class="check" data-answer="1">
+  <div class="qlabel">Predict</div>
+  <div class="qtext">What does <code>print(values)</code> show after <code>mutate(values)</code>?</div>
+  <div class="opt-row"><button class="opt">['old']</button><div class="opt-fb">Not quite — items.append mutates the shared object directly, so this change is visible through values too.</div></div>
+  <div class="opt-row"><button class="opt">['old', 'new']</button><div class="opt-fb">Correct — mutate's parameter items refers to the exact same object as the caller's values. append() mutates that shared object, so the caller sees the change.</div></div>
+  <div class="fb"></div>
+</div>
+<div class="callout">Both calls create a new parameter binding. Only one of them mutates the object that binding shares with the caller.</div>
+</section>
+
+<section class="slide" id="slide-7">
+<div class="page-label">Page 7</div>
+<h2>Mutable and Immutable Objects</h2>
+<div class="callout">A mutable object can have its state changed after creation.</div>
+<pre><code>items = [1, 2, 3]
+items.append(4)</code></pre>
+<p>Lists are mutable — the same object, changed in place. Now contrast:</p>
+<pre><code>x = 10
+x = x + 1</code></pre>
+<div class="callout">The integer object is immutable, so it isn't changed. x + 1 produces another integer value, and x is rebound to the resulting object.</div>
+<table>
+  <tr><th>Commonly mutable</th><td>lists, dictionaries, sets</td></tr>
+  <tr><th>Commonly immutable</th><td>integers, floats, strings, tuples</td></tr>
+</table>
+<p style="font-size:14px; color:var(--ink-soft);">Not a list to memorize — the important question is always the same one from the last page: <strong>did the object change, or did the name become associated with another object?</strong></p>
+</section>
+
+<section class="slide" id="slide-8">
+<div class="page-label">Page 8</div>
+<h2>Objects and Function Calls</h2>
+<pre><code>def add_item(items):
+    items.append("new")
+
+values = []
+add_item(values)</code></pre>
+<div class="callout">What does values contain after this call?</div>
+<p><code>["new"]</code>. Topic 7 established that a function call creates a new parameter binding — <code>items</code> is a fresh binding, local to this call. But that binding refers to the <em>exact same object</em> that <code>values</code> refers to in the caller. <code>items.append(...)</code> mutates that shared object, so the caller sees the change.</p>
+<div class="diagram">
+  <div style="display:flex; align-items:center; justify-content:center; gap:0; font-family:'IBM Plex Mono',monospace;">
+    <div style="display:flex; flex-direction:column; gap:24px;">
+      <div style="border:1.5px solid var(--ink); border-radius:6px; padding:8px 16px;">values (caller)</div>
+      <div style="border:1.5px solid var(--syntax); border-radius:6px; padding:8px 16px; background:var(--syntax-bg);">items (call env)</div>
+    </div>
+    <div style="font-size:20px; color:var(--ink-soft); padding:0 16px;">→</div>
+    <div style="border:1.5px solid var(--ink); border-radius:8px; padding:16px 24px;">["new"]</div>
+  </div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">Resist the label "pass-by-reference" here — that term carries baggage from other languages that doesn't map cleanly onto this. What's actually happening is simpler and more precise: a new binding is created, and it happens to refer to an object the caller can also reach.</p>
+</section>
+
+<section class="slide" id="slide-9">
+<div class="page-label">Page 9</div>
+<h2>Copying</h2>
+<pre><code>a = [1, 2, 3]
+b = a</code></pre>
+<div class="callout">This creates an alias, not an independent copy.</div>
+<pre><code>b = a.copy()</code></pre>
+<p>Now there are two distinct list objects — mutating one no longer affects the other.</p>
+<div class="lang-grid">
+  <div class="lang-card"><h4><code>b = a</code></h4><p>alias — one object, two names</p></div>
+  <div class="lang-card"><h4><code>b = a.copy()</code></h4><p>two independent objects</p></div>
+</div>
+</section>
+
+<section class="slide" id="slide-10">
+<div class="page-label">Page 10</div>
+<h2>Shallow vs. Deep Copy</h2>
+<pre><code>a = [[1, 2], [3, 4]]
+b = a.copy()</code></pre>
+<div class="callout">The outer lists are distinct. The nested lists are still shared.</div>
+<pre><code>b[0].append(99)</code></pre>
+
+<div class="check open">
+  <div class="qlabel">Predict</div>
+  <div class="qtext">Does <code>a</code> change?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Yes — <code>a</code> becomes <code>[[1, 2, 99], [3, 4]]</code>. <code>.copy()</code> only copies the outer container; <code>a[0]</code> and <code>b[0]</code> still refer to the exact same inner list object.</div>
+</div>
+<div class="callout">A shallow copy copies the outer container, not the entire object graph reachable from it.</div>
+<pre><code>import copy
+b = copy.deepcopy(a)</code></pre>
+<p style="font-size:14px; color:var(--ink-soft);">A deep copy recursively copies nested objects rather than sharing the same nested objects. The goal here is understanding <strong>shared versus independent objects</strong> — not memorizing the <code>copy</code> module's API.</p>
+</section>
+
+<section class="slide" id="slide-11">
+<div class="page-label">Page 11</div>
+<h2>Objects and Runtime Memory</h2>
+<div class="callout">Where do these objects actually live while the program executes?</div>
+<div class="diagram">
+  <div style="display:flex; gap:24px; justify-content:center; font-family:'IBM Plex Mono',monospace;">
+    <div style="border:1.5px solid var(--syntax); border-radius:8px; padding:14px 20px; background:var(--syntax-bg); text-align:center;">
+      <div style="font-size:11px; text-transform:uppercase; color:var(--syntax); margin-bottom:6px;">Stack</div>
+      call frames<br>bindings
+    </div>
+    <div style="font-size:20px; color:var(--ink-soft); align-self:center;">→</div>
+    <div style="border:1.5px solid var(--semantics); border-radius:8px; padding:14px 20px; background:var(--semantics-bg); text-align:center;">
+      <div style="font-size:11px; text-transform:uppercase; color:var(--semantics); margin-bottom:6px;">Heap</div>
+      lists<br>dictionaries<br>…
+    </div>
+  </div>
+</div>
+<p style="font-size:14px; color:var(--ink-soft);">This is a conceptual runtime model, not a claim about any specific implementation. The "stack" here is the same idea as Topic 7's call environments and Topic 8's chain of active calls — each active call has a frame holding its bindings. Those bindings can point to objects that live independently, on the "heap," outlasting any single call frame.</p>
+</section>
+
+<section class="slide" id="slide-12">
+<div class="page-label">Page 12</div>
+<h2>Object Lifetime and Reachability</h2>
+<pre><code>a = [1, 2, 3]
+b = a
+del a</code></pre>
+
+<div class="check open">
+  <div class="qlabel">Predict</div>
+  <div class="qtext">Is the list object still around after <code>del a</code>?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Yes — <code>del a</code> only removes the name <code>a</code>. The object is still reachable through <code>b</code>, so it remains fully available.</div>
+</div>
+<pre><code>del b</code></pre>
+<div class="callout">An object that is no longer reachable through any name can become eligible for memory reclamation.</div>
+<p style="font-size:14px; color:var(--ink-soft);">This connects directly to Topic 6's discussion of lifetime — a binding's lifetime and an object's lifetime are related but not identical questions.</p>
+</section>
+
+<section class="slide" id="slide-13">
+<div class="page-label">Page 13</div>
+<h2>Garbage Collection, Briefly</h2>
+<div class="callout">Garbage collection reclaims storage for objects that are no longer needed.</div>
+<div class="diagram"><div class="flow">
+  <div class="flow-box">object</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">reachable?</div><div class="flow-arrow">↓ yes → remains available · no → eligible for reclamation</div>
+</div></div>
+<p style="font-size:14px; color:var(--ink-soft);">One real complication, briefly: two objects can reference each other in a cycle (A→B→A) with nothing outside pointing to either. Reference counting alone can't detect that — no implementation detail needed here, just the awareness that reachability isn't always a trivial question to answer.</p>
+
+<h3 style="font-size:16px; margin:24px 0 8px;">Resource lifetime</h3>
+<p>Memory isn't the only resource a program manages — files, network sockets, database connections, and locks all have their own lifetimes too.</p>
+<div class="callout">Object lifetime and resource lifetime are not necessarily the same thing.</div>
+</section>
+
+<section class="slide" id="slide-14">
+<div class="page-label">Page 14</div>
+<h2>Interpreter Connection</h2>
+<p>Back to the environment model from Topic 6:</p>
+<div class="diagram">
+  <div style="display:flex; flex-direction:column; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;">
+    <div style="font-size:11px; text-transform:uppercase; color:var(--ink-soft);">Environment</div>
+    <div style="border:1.5px solid var(--ink); border-radius:8px; padding:14px 24px;">x → Object A<br>y → Object A</div>
+  </div>
+</div>
+<div class="callout">If an environment maps names to values, and values can be objects, what does the interpreter actually need to represent?</div>
+<table>
+  <tr><th>Assignment</th><td>changes a name's binding</td></tr>
+  <tr><th>Mutation</th><td>changes an object's state</td></tr>
+  <tr><th>Environment</th><td>records bindings</td></tr>
+  <tr><th>Object</th><td>has identity, type, and state</td></tr>
+</table>
+<p style="font-size:14px; color:var(--ink-soft);">This is the direct bridge to your interpreter project — environments and objects are two separate structures your interpreter has to model, not one.</p>
+</section>
+
+<section class="slide" id="slide-15">
+<div class="page-label">Page 15</div>
+<h2>Final Object-Graph Challenge</h2>
+<p>The major synthesis activity of this topic:</p>
+<pre><code>a = [1, 2]
+b = a
+c = a.copy()
+b.append(3)
+c.append(4)
+a = c</code></pre>
+<p>Before checking, draw the object graph and answer:</p>
+<ol>
+  <li>How many list objects exist?</li>
+  <li>Which names alias the same object?</li>
+  <li>Which operations mutated an object?</li>
+  <li>Which operation rebound a name?</li>
+  <li>Which object was created by the copy?</li>
+  <li>What does each name refer to at the end?</li>
+</ol>
+
+<div class="check open">
+  <div class="qlabel">Trace it</div>
+  <div class="qtext">Work through all six questions, then check your answers.</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">
+    <strong>1.</strong> Two list objects — call them Object 1 (from <code>a = [1, 2]</code>) and Object 2 (from <code>a.copy()</code>).<br><br>
+    <strong>2.</strong> By the end, <code>a</code> and <code>c</code> both alias Object 2.<br><br>
+    <strong>3.</strong> <code>b.append(3)</code> mutated Object 1 (now <code>[1, 2, 3]</code>). <code>c.append(4)</code> mutated Object 2 (now <code>[1, 2, 4]</code>) — two separate mutations, on two separate objects.<br><br>
+    <strong>4.</strong> <code>a = c</code> — the only rebinding in this sequence. Before this line, <code>a</code> pointed to Object 1; afterward, it points to Object 2.<br><br>
+    <strong>5.</strong> Object 2 was created by <code>a.copy()</code>.<br><br>
+    <strong>6.</strong> <code>a → [1, 2, 4]</code>, <code>b → [1, 2, 3]</code>, <code>c → [1, 2, 4]</code>.
+  </div>
+</div>
+</section>
+
+<section class="slide" id="slide-16">
+<div class="page-label">Page 16</div>
+<h2>Check Your Understanding</h2>
+<p style="font-size:14px; color:var(--ink-soft);">Nine questions that ask you to apply this topic's ideas. Not graded — just for you to check where things stand before moving on.</p>
+
+<div class="check open">
+  <div class="qlabel">1 · Name vs. object</div>
+  <div class="qtext">In <code>x = [1, 2, 3]</code>, what is <code>x</code>, and what is the list itself?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>x</code> is a name — a binding that refers to something. The list <code>[1, 2, 3]</code> is the object itself, with its own identity and state, existing independently of any particular name that happens to refer to it.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">2 · Identity</div>
+  <div class="qtext">Given <code>a = [1, 2]</code> and <code>b = [1, 2]</code>, why are these two different objects even though they look the same?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Each <code>[1, 2]</code> literal creates a brand-new list object. Nothing about writing the same values twice makes Python reuse the same object — <code>a</code> and <code>b</code> each get their own, independently created and independently mutable.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">3 · Equality vs. identity</div>
+  <div class="qtext">Given <code>c = a</code> right after the previous question, which of <code>a == c</code> and <code>a is c</code> would be True, and which would also be True for <code>a</code> and <code>b</code>?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">For <code>a</code> and <code>c</code>: both <code>==</code> and <code>is</code> are True because they refer to the same object. For <code>a</code> and <code>b</code>: <code>==</code> is True because their contents are equal, while <code>is</code> is False because they are distinct objects.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">4 · Aliasing</div>
+  <div class="qtext">After <code>b = a</code>, a change made through <code>b</code> is visible through <code>a</code>. Why?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Because <code>b = a</code> didn't copy anything — it bound <code>b</code> to the exact same object <code>a</code> already refers to. <code>a</code> and <code>b</code> are two names for one object, so mutating it through either name is visible through both. That's aliasing.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">5 · Rebinding</div>
+  <div class="qtext">After <code>b = a</code>, what happens to <code>a</code> if you then run <code>b = [9, 9]</code>?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">Nothing — <code>a</code> is completely unaffected. <code>b = [9, 9]</code> points <code>b</code> at a brand-new object; it doesn't touch whatever <code>b</code> used to refer to, and it never touches <code>a</code> at all.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">6 · Mutation</div>
+  <div class="qtext">After <code>b = a</code>, what happens to <code>a</code> if you then run <code>b.append(9)</code>?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content"><code>a</code> shows the appended value too. <code>append</code> changes the shared object's state in place — since <code>a</code> and <code>b</code> refer to that same object, the change is visible through either name.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">7 · Function calls</div>
+  <div class="qtext">A function mutates its parameter with <code>.append(...)</code>. Why does the caller's list change too?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">The call creates a new parameter binding, but that binding refers to the same object the caller's name refers to — the same aliasing relationship as Page 3, just introduced by a function call instead of an ordinary assignment. Mutating through the parameter mutates the one shared object.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">8 · Shallow copy</div>
+  <div class="qtext">Why can <code>b = a.copy()</code> still leave <code>a</code> and <code>b</code>'s nested lists shared?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">A shallow copy only copies the outer container — it doesn't recursively copy every object reachable from it. If <code>a</code>'s elements are themselves lists, the copy's elements still point at those same original inner objects, so mutating a nested list through <code>b</code> is visible through <code>a</code> too.</div>
+</div>
+
+<div class="check open" style="margin-top:16px;">
+  <div class="qlabel">9 · Reachability</div>
+  <div class="qtext">After <code>del a</code> and <code>del b</code> (with no other names pointing to that list), what makes the object eligible for reclamation?</div>
+  <button class="reveal-btn">Reveal answer</button>
+  <div class="reveal-content">It's no longer reachable through any name in any active environment. Reachability is the deciding question for memory reclamation — an object that is no longer reachable becomes eligible for reclamation according to the runtime's memory-management rules.</div>
+</div>
+
+<div class="qbox" style="margin-top:24px;">
+  <div class="qlabel">Final synthesis</div>
+  <p style="margin-bottom:0;"><strong>Rebinding changes what a name refers to; mutation changes the object itself. How does this distinction connect names, references, objects, function calls, and memory?</strong></p>
+  <button class="reveal-btn" style="margin-top:14px;">Reveal answer</button>
+  <div class="reveal-content">Names are bindings recorded in an environment; each binding refers to an object with its own identity and state. Multiple names can alias the same object, so a mutation through one name is visible through all of them — including across a function call, where a parameter binding can alias the caller's object. An object that is no longer reachable through any binding becomes eligible for reclamation according to the runtime's memory-management rules.</div>
+</div>
+</section>
+
+<section class="slide" id="slide-17">
+<div class="page-label">Summary</div>
+<h2>The Big Picture</h2>
+<div class="diagram"><div class="flow">
+  <div class="flow-box">name</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">reference</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">object</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">identity + state</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">aliasing</div><div class="flow-arrow">↓</div>
+  <div class="flow-box">rebinding vs. mutation</div><div class="flow-arrow">↓</div>
+  <div class="flow-box process">reachability</div>
+</div></div>
+<table>
+  <tr><th>Topic 7</th><td>function → call environment → return → abstraction.</td></tr>
+  <tr><th>Topic 8</th><td>control flow → iteration → exceptions → execution paths.</td></tr>
+  <tr><th>Topic 9</th><td>name → reference → object → mutation → reachability.</td></tr>
+</table>
+<div class="callout">We now have a model of names, environments, objects, references, mutation, and memory. But what runtime system actually carries out these operations? That's Topic 10: runtime systems, interpretation, and how Python actually executes.</div>
+</section>
+
+<!-- IMPORTANT: end-note must go here, INSIDE .wrap, BEFORE the closing </div> below.
+     Putting it after </div> breaks the fixed-height layout (a bug hit 5 times across
+     topics 1/3/4/5 before this template was fixed) -->
+<div class="end-note" id="endNote" style="display:none; text-align:center; padding:40px 24px; color:var(--ink-soft);">
+  <h3 style="font-size:22px; margin-bottom:10px;">End of Topic 9</h3>
+  <p>Use Previous to review any page.</p>
+</div>
+
+</div>
+
+<div class="navbar">
+  <div class="bar-inner">
+    <button class="navbtn secondary" id="prevBtn">← Previous</button>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="navbtn" id="nextBtn">Next →</button>
+  </div>
+</div>
+
+<script src="../assets/lesson.js"></script>
+</body>
+</html>
