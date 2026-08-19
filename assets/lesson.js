@@ -1,4 +1,17 @@
 
+// Detect whether this page is embedded in an iframe (e.g. a Moodle topic page)
+// or being viewed standalone (e.g. GitHub Pages, a direct link). Standalone-only
+// nav (Main Menu, Next Topic) is hidden by default via CSS and revealed only
+// when this confirms we're the top-level page, so embedded Moodle behavior
+// is unchanged even if this check fails for any reason.
+try {
+  if (window.self === window.top) {
+    document.body.classList.add('standalone');
+  }
+} catch (e) {
+  // Cross-origin access blocked — treat as embedded, nav stays hidden.
+}
+
 (function(){
   var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
   var total = slides.length;

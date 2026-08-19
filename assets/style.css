@@ -163,6 +163,7 @@
     font-family:'Inter',sans-serif; font-weight:600; font-size:14.5px;
     background:var(--ink); color:var(--paper); border:none; border-radius:8px;
     padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px;
+    text-decoration:none;
   }
   .navbtn:disabled{background:var(--paper-dim); color:var(--ink-soft); cursor:not-allowed;}
   .navbtn.secondary{background:var(--paper-dim); color:var(--ink);}
@@ -174,3 +175,53 @@
   .end-note{text-align:center; padding:60px 24px; color:var(--ink-soft);}
   .end-note h3{font-size:22px; margin-bottom:10px;}
 
+
+  /* ===== STANDALONE / SCROLLING PAGES (e.g. index) ===== */
+  /* The base body rule above (height:100vh; overflow:hidden; display:flex) is built
+     for the paginated topic slides. Pages without a topbar/navbar — like index.html —
+     opt out of that with this class so the page scrolls normally. */
+  body.scroll-page{height:auto; min-height:100vh; overflow:visible; display:block;}
+
+  .index-wrap{max-width:760px; margin:0 auto; padding:56px 24px 80px;}
+
+  .phase-section{margin-top:48px;}
+  .phase-tag{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+    text-transform:uppercase; letter-spacing:0.08em; padding:4px 10px; border-radius:5px;
+    margin-bottom:16px; font-weight:600;
+  }
+  .phase-tag.p1{background:var(--syntax-bg); color:var(--syntax);}
+  .phase-tag.p2{background:var(--semantics-bg); color:var(--semantics);}
+  .phase-tag.p3{background:var(--execution-bg); color:var(--execution);}
+
+  .topic-list{border-top:1px solid var(--rule);}
+  a.topic-row{
+    display:grid; grid-template-columns:52px 1fr auto; gap:20px; align-items:center;
+    text-decoration:none; color:inherit; padding:22px 4px;
+    border-bottom:1px solid var(--rule); transition:background .15s ease, padding .15s ease;
+  }
+  a.topic-row:hover{background:var(--paper-dim); padding-left:14px; padding-right:14px;}
+  .topic-row .num{font-family:'Fraunces',serif; font-size:24px; color:var(--ink-soft);}
+  .topic-row h3{margin:0 0 4px; font-family:'Fraunces',serif; font-size:21px; font-weight:600;}
+  .topic-row p{margin:0; color:var(--ink-soft); font-size:14px;}
+  .topic-row .go{font-size:19px; color:var(--ink-soft);}
+
+  @media(max-width:640px){
+    a.topic-row{grid-template-columns:36px 1fr 16px; gap:12px;}
+    .topic-row h3{font-size:18.5px;}
+  }
+
+  /* ===== STANDALONE-ONLY NAV (Main Menu / Next Topic) ===== */
+  /* Hidden by default so embedding this page in Moodle (or anywhere else via
+     iframe) shows nothing extra. lesson.js adds body.standalone only when the
+     page confirms it's top-level, which is what reveals these. */
+  .standalone-nav{display:none;}
+
+  .menu-link{color:var(--ink-soft); text-decoration:none;}
+  .menu-link:hover{color:var(--ink); text-decoration:underline;}
+  body.standalone .menu-link{display:inline;}
+
+  .end-note .end-actions{gap:12px; justify-content:center; margin-top:24px; flex-wrap:wrap;}
+  body.standalone .end-note .end-actions{display:flex;}
+  .end-note .completion-note{margin-top:16px; font-size:13px;}
+  body.standalone .end-note .completion-note{display:block;}
