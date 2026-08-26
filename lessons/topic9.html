@@ -86,7 +86,7 @@ b = [1, 2, 3]</code></pre>
 <pre><code>a = [1, 2, 3]
 b = a</code></pre>
 <div class="diagram">
-  <div style="display:flex; align-items:center; justify-content:center; gap:0; font-family:'IBM Plex Mono',monospace;">
+  <div style="display:flex; align-items:center; justify-content:center; gap:0; font-family:'JetBrains Mono',monospace;">
     <div style="display:flex; flex-direction:column; gap:24px;">
       <div style="border:1.5px solid var(--ink); border-radius:6px; padding:8px 16px;">a</div>
       <div style="border:1.5px solid var(--ink); border-radius:6px; padding:8px 16px;">b</div>
@@ -216,7 +216,7 @@ add_item(values)</code></pre>
 <div class="callout">What does values contain after this call?</div>
 <p><code>["new"]</code>. Topic 7 established that a function call creates a new parameter binding. Here, <code>items</code> is a fresh local binding, but it refers to the <em>same object</em> that <code>values</code> refers to in the caller. <code>items.append(...)</code> mutates that shared object, so the caller sees the change.</p>
 <div class="diagram">
-  <div style="display:flex; align-items:center; justify-content:center; gap:0; font-family:'IBM Plex Mono',monospace;">
+  <div style="display:flex; align-items:center; justify-content:center; gap:0; font-family:'JetBrains Mono',monospace;">
     <div style="display:flex; flex-direction:column; gap:24px;">
       <div style="border:1.5px solid var(--ink); border-radius:6px; padding:8px 16px;">values (caller)</div>
       <div style="border:1.5px solid var(--syntax); border-radius:6px; padding:8px 16px; background:var(--syntax-bg);">items (call env)</div>
@@ -267,7 +267,7 @@ b = copy.deepcopy(a)</code></pre>
 <h2>Objects and Runtime Memory</h2>
 <div class="callout">So where do these objects actually live while the program executes?</div>
 <div class="diagram">
-  <div style="display:flex; gap:24px; justify-content:center; font-family:'IBM Plex Mono',monospace;">
+  <div style="display:flex; gap:24px; justify-content:center; font-family:'JetBrains Mono',monospace;">
     <div style="border:1.5px solid var(--syntax); border-radius:8px; padding:14px 20px; background:var(--syntax-bg); text-align:center;">
       <div style="font-size:11px; text-transform:uppercase; color:var(--syntax); margin-bottom:6px;">Stack</div>
       call frames<br>bindings
@@ -320,7 +320,7 @@ del a</code></pre>
 <h2>Interpreter Connection</h2>
 <p>Back to the environment model from Topic 6:</p>
 <div class="diagram">
-  <div style="display:flex; flex-direction:column; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;">
+  <div style="display:flex; flex-direction:column; align-items:center; gap:6px; font-family:'JetBrains Mono',monospace;">
     <div style="font-size:11px; text-transform:uppercase; color:var(--ink-soft);">Environment</div>
     <div style="border:1.5px solid var(--ink); border-radius:8px; padding:14px 24px;">x → Object A<br>y → Object A</div>
   </div>
