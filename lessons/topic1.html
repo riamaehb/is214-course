@@ -372,7 +372,7 @@ for x in numbers:
 <table>
   <tr><th style="color:var(--syntax);">Lexical</th><td>The input cannot be divided into valid tokens.</td></tr>
   <tr><th style="color:var(--syntax);">Syntax</th><td>The tokens do not form a valid program structure.</td></tr>
-  <tr><th style="color:var(--semantics);">Semantic</th><td>The structure is valid, but the program violates a rule about meaning or execution.</td></tr>
+  <tr><th style="color:var(--semantics);">Semantic</th><td>The structure is valid, but the program violates a rule about what it means.</td></tr>
 </table>
 <p>Before you reveal the answer, try to identify <strong>where in the process the problem occurs</strong>.</p>
 
@@ -399,7 +399,7 @@ for x in numbers:
   <div class="qtext"><code>x = "hello"<br>y = x + 5</code> — what kind of problem is this?</div>
   <div class="opt-row"><button class="opt">Lexical error</button><div class="opt-fb">Not quite — every token here is valid: identifiers, an assignment operator, a string literal, a plus operator, a number.</div></div>
   <div class="opt-row"><button class="opt">Syntax error</button><div class="opt-fb">Not quite — <code>x + 5</code> is a perfectly valid expression structurally. Addition of two things is allowed by the grammar.</div></div>
-  <div class="opt-row"><button class="opt">Semantic / runtime error</button><div class="opt-fb">Correct. The structure is fine — the grammar has no problem with "expression + expression." The issue is meaning: adding a string to a number isn't a valid operation. In Python specifically, there's no separate static analysis pass that catches this ahead of time — the incompatibility is only detected when the statement actually executes, as a <code>TypeError</code>.</div></div>
+  <div class="opt-row"><button class="opt">Semantic error</button><div class="opt-fb">Correct — this is a semantic error. The structure is fine (the grammar has no problem with "expression + expression"), but the meaning is invalid: adding a string to a number isn't a valid operation. Semantic errors aren't automatically caught at runtime — a statically-typed language could flag this before the program ever executes. Python doesn't do that static check, so here the error only surfaces once the statement actually runs, as a <code>TypeError</code>.</div></div>
   <div class="fb"></div>
 </div>
 <p style="font-size:14px; color:var(--ink-soft);">That last example points at something worth remembering: <strong>different languages detect different classes of errors at different stages.</strong> Some catch a mismatch like this before the program ever runs; others, like Python, only discover it during execution. You'll see this distinction matter again later in the course.</p>
