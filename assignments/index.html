@@ -5,9 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IS 214 | Programming Exercises</title>
 <link rel="stylesheet" href="assets/style.css">
-<style>body.standalone .standalone-nav{display:flex;}</style>
+<style>body.standalone .standalone-nav{display:flex;}
+details.sec{border-top:1px solid var(--rule);}
+details.sec:last-of-type{border-bottom:1px solid var(--rule);}
+details.sec>summary{cursor:pointer;list-style:none;font-family:'Literata',serif;font-size:22px;font-weight:600;padding:16px 4px;display:flex;align-items:center;gap:12px;}
+details.sec>summary::-webkit-details-marker{display:none;}
+details.sec>summary::before{content:"\25B8";font-size:15px;color:var(--ink-soft);width:14px;}
+details.sec[open]>summary::before{content:"\25BE";}
+details.sec>.sec-body{padding:0 4px 12px 26px;}
+</style>
 </head>
-<body class="scroll-page">
+<body class="scroll-page" data-collapsible>
 <div class="index-wrap">
 
 <section class="hero" style="padding-top:0; padding-bottom:36px;">
@@ -58,6 +66,31 @@ SHOW PRODUCT(SUM(2, 3), 4)</code></pre>
       links[i].setAttribute('target', '_blank');
       links[i].setAttribute('rel', 'noopener');
     }
+    if (document.body.hasAttribute('data-collapsible')) {
+      var wrap = document.querySelector('.index-wrap');
+      var heads = Array.prototype.slice.call(wrap.children).filter(function (e) { return e.tagName === 'H2'; });
+      heads.forEach(function (h, i) {
+        var d = document.createElement('details');
+        d.className = 'sec';
+        if (i === 0) d.open = true;
+        var sm = document.createElement('summary');
+        sm.textContent = h.textContent;
+        var inner = document.createElement('div');
+        inner.className = 'sec-body';
+        var n = h.nextElementSibling;
+        while (n && n.tagName !== 'H2') { var nx = n.nextElementSibling; inner.appendChild(n); n = nx; }
+        d.appendChild(sm);
+        d.appendChild(inner);
+        h.parentNode.replaceChild(d, h);
+      });
+    }
+    // Tell the parent page how tall the content is, in case it wants to resize the frame.
+    function sendHeight() {
+      try { parent.postMessage({ type: 'is214-height', height: document.documentElement.scrollHeight }, '*'); } catch (e) {}
+    }
+    document.addEventListener('toggle', sendHeight, true);
+    window.addEventListener('load', sendHeight);
+    window.addEventListener('resize', sendHeight);
   }
 })();
 </script>
