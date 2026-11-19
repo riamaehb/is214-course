@@ -1,0 +1,2 @@
+/* Navigation buttons show only when the page is opened on its own, not inside a Moodle iframe. */
+body.standalone .standalone-nav{display:flex;}
