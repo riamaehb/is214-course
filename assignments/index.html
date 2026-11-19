@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IS 214 | Programming Exercises</title>
 <link rel="stylesheet" href="assets/style.css">
-<link rel="stylesheet" href="assets/site.css">
+<style>body.standalone .standalone-nav{display:flex;}</style>
 </head>
 <body class="scroll-page">
 <div class="index-wrap">
@@ -44,6 +44,22 @@ SHOW PRODUCT(SUM(2, 3), 4)</code></pre>
 
 
 </div>
-<script src="assets/embed.js"></script>
+<script>
+// Detect whether the page is inside an iframe (for example a Moodle assignment).
+// Embedded: the navigation buttons stay hidden and links open in a new tab, so the frame never navigates away.
+(function () {
+  var top = true;
+  try { top = (window.self === window.top); } catch (e) { top = false; }
+  if (top) {
+    document.body.classList.add('standalone');
+  } else {
+    var links = document.querySelectorAll('a[href]');
+    for (var i = 0; i < links.length; i++) {
+      links[i].setAttribute('target', '_blank');
+      links[i].setAttribute('rel', 'noopener');
+    }
+  }
+})();
+</script>
 </body>
 </html>
