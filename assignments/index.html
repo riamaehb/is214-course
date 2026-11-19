@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 | Programming Exercises</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="scroll-page">
+<div class="index-wrap">
+
+<section class="hero" style="padding-top:0; padding-bottom:36px;">
+  <div class="eyebrow">IS 214 · PRINCIPLES OF PROGRAMMING LANGUAGES</div>
+  <h1>Programming exercises</h1>
+</section>
+
+
+<p class="lede" style="margin-top:32px;">In the first programming exercise you practiced programming in Python. In the second one, you wrote a lexer for a calculator language. In the remaining exercises, you will build a small interpreter for a language that you will design yourself. You will build it in stages, and each stage uses the result of the one before it.</p>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Overview</h2>
+<p>For example, suppose you design a language called Calcora. A program written in it looks like this:</p>
+<pre><code>SHOW SUM(2, 3)
+SHOW PRODUCT(SUM(2, 3), 4)</code></pre>
+<p>Your interpreter should produce two results, <code>5</code> and <code>20</code>, in that order. You will be able to do this as you work through the programming exercises.</p>
+<ol class="summary-list"><li><a href="pe3.html">Programming Exercise 3</a> - Design your own language. Set keywords, notation, and layout rules. Save your choices in <code>language.json</code>. This will be the basis of your next assignments.</li><li><a href="pe4.html">Programming Exercise 4</a> - Write a lexer for your language that breaks a program into tokens, and a parser that organizes the tokens into a tree.</li><li><a href="pe5.html">Programming Exercise 5</a> - Write an evaluator that computes the result of the tree.</li><li><a href="final.html">Final Interpreter</a> - Combine your lexer, parser and evaluator into one program.</li></ol>
+<p>Your language will look different from Calcora, because you choose its design. The stages are the same for everyone.</p>
+<div class="diagram"><div class="pipeline"><div class="artifact">language.json (PE3)</div><div class="arr">↓</div><div class="process p1">tokenize (PE4)</div><div class="arr">↓</div><div class="artifact">TOKENS</div><div class="arr">↓</div><div class="process p2">parse (PE4)</div><div class="arr">↓</div><div class="artifact">AST</div><div class="arr">↓</div><div class="process p3">evaluate (PE5)</div><div class="arr">↓</div><div class="artifact">RESULTS</div></div></div>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Exercises</h2>
+<table><tr><th>Exercise</th><th>What you submit</th></tr><tr><td><a href="pe3.html">PE3 Language Design</a></td><td><code>language.json</code>, downloaded from the PE3 page</td></tr><tr><td><a href="pe4.html">PE4 Lexer and Parser</a></td><td><code>language.json</code>, <code>lexer.py</code>, <code>parser.py</code></td></tr><tr><td><a href="pe5.html">PE5 Evaluator</a></td><td><code>evaluator.py</code></td></tr><tr><td><a href="final.html">Final Interpreter</a></td><td>One ZIP file with your five files</td></tr></table>
+<p>There is another Programming Exercise 6, which is a separate exercise on finding and fixing bugs. It is in Moodle and is not part of this sequence.</p>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Related Topics</h2>
+<table><tr><th>Exercise</th><th>Topics</th></tr><tr><td>PE3</td><td>Topics 1 to 3: syntax, grammars, and what makes a language</td></tr><tr><td>PE4</td><td>Topic 2 (lexical analysis) and Topic 3 (parsing and syntax trees)</td></tr><tr><td>PE5</td><td>Topic 4: semantics and evaluation</td></tr><tr><td>Final</td><td>Topic 10: how the pieces of an interpreter fit together</td></tr></table>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Checking</h2>
+<p>Submit each exercise in its own submission bin in Moodle. I will run your files against tests generated from your own <code>language.json</code>. Follow the instructions on each page to test your work before you submit. The deadline for everything is December 19.</p>
+<p>Name each file you submit with your UP ID username and a hyphen before the file name. For example, my <code>lexer.py</code> becomes <code>rhborromeo-lexer.py</code>. Keep the original file names in your own folder.</p>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Getting Started</h2>
+<p><a href="pe3.html" class="navbtn" style="display:inline-flex;">Start with PE3 →</a></p>
+<p>The <a href="reference.html">Language Rules and Conventions page</a> lists every rule in one place.</p>
+
+
+</div>
+</body>
+</html>

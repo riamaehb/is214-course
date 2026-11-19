@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 | PE3 Language Design</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/form.css">
+</head>
+<body class="scroll-page">
+<div class="index-wrap">
+
+<section class="hero" style="padding-top:0; padding-bottom:36px;">
+  <div class="eyebrow">PROGRAMMING EXERCISE 3</div>
+  <h1>Language Design</h1>
+</section>
+
+
+<p class="lede" style="margin-top:32px;">Design a small calculator language using the form below. The form saves your design in <code>language.json</code>. Download it and submit it as described under Submission.</p>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Fixed Rules</h2>
+<ul><li>A program has one or more output statements, one per line. Each produces one integer result.</li><li>An expression is an integer or an operation. Operations can be nested.</li><li>The operations are addition, subtraction, multiplication and division. Each takes exactly two operands.</li><li>Integers are digits only. There are no negative literals, but results can be negative.</li><li>Division truncates toward zero. Division by zero is an error.</li><li>There are no variables, functions, strings or comments.</li></ul>
+<p>See the <a href="reference.html">Language Rules and Conventions page</a> for the full list.</p>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Your Choices</h2>
+<table><tr><th>Choice</th><th>Options</th></tr><tr><td>Language name</td><td>Starts with a letter, up to 40 characters</td></tr><tr><td>Keywords</td><td>One for output and one for each operation. Each starts with a letter, and all are different</td></tr><tr><td>Notation</td><td>Function-like, <code>SUM(2, 3)</code>, or parenthesized prefix, <code>(SUM 2 3)</code></td></tr><tr><td>Statement terminator</td><td>Newline or semicolon</td></tr><tr><td>Program boundaries</td><td>Start and end keywords, or none</td></tr><tr><td>Case sensitivity</td><td>Sensitive or insensitive</td></tr><tr><td>Reflection</td><td>Two or three sentences on why you chose your notation and keywords</td></tr></table>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Designer</h2>
+
+<div class="fields"><div><label class="lbl" for="languageName">Language name</label><input id="languageName" placeholder="Enter your language name" spellcheck="false" autocomplete="off"></div></div>
+<div class="fields"><div><label class="lbl" for="printKeyword">Output keyword</label><input id="printKeyword" placeholder="Choose a keyword" spellcheck="false" autocomplete="off"></div><div><label class="lbl" for="addKeyword">Addition</label><input id="addKeyword" placeholder="Choose a keyword" spellcheck="false" autocomplete="off"></div><div><label class="lbl" for="subKeyword">Subtraction</label><input id="subKeyword" placeholder="Choose a keyword" spellcheck="false" autocomplete="off"></div><div><label class="lbl" for="mulKeyword">Multiplication</label><input id="mulKeyword" placeholder="Choose a keyword" spellcheck="false" autocomplete="off"></div><div><label class="lbl" for="divKeyword">Division</label><input id="divKeyword" placeholder="Choose a keyword" spellcheck="false" autocomplete="off"></div></div>
+<p class="hint">Keywords start with a letter and use only English letters, digits or underscores. They must be different from each other, even when the letter case differs.</p>
+
+<fieldset class="fs"><legend>Notation</legend>
+<div class="choices">
+<label class="choice"><input type="radio" name="notation" value="function"><span><strong>Function-like</strong><code>SUM(2, 3)</code><small>A comma separates the two arguments.</small></span></label>
+<label class="choice"><input type="radio" name="notation" value="prefix"><span><strong>Parenthesized prefix</strong><code>(SUM 2 3)</code><small>Spaces separate the arguments.</small></span></label>
+</div></fieldset>
+
+<fieldset class="fs"><legend>Statement terminator</legend>
+<label class="radio-line"><input type="radio" name="terminator" value="newline"> Newline <small>The line break ends the statement.</small></label>
+<label class="radio-line"><input type="radio" name="terminator" value="semicolon"> Semicolon <small>Each statement ends with <code>;</code>.</small></label>
+</fieldset>
+
+<fieldset class="fs"><legend>Start and end keywords</legend>
+<label class="radio-line"><input type="radio" name="boundariesChoice" value="yes"> Yes <small>Programs begin and end with a keyword, each on its own line.</small></label>
+<label class="radio-line"><input type="radio" name="boundariesChoice" value="no"> No</label>
+</fieldset>
+<div class="fields hidden" id="boundaryFields"><div><label class="lbl" for="startKeyword">Start keyword</label><input id="startKeyword" placeholder="Choose a keyword" spellcheck="false" autocomplete="off"></div><div><label class="lbl" for="endKeyword">End keyword</label><input id="endKeyword" placeholder="Choose a keyword" spellcheck="false" autocomplete="off"></div></div>
+
+<fieldset class="fs"><legend>Case-sensitive keywords</legend>
+<label class="radio-line"><input type="radio" name="caseChoice" value="yes"> Yes <small><code>SUM</code> and <code>sum</code> are different words.</small></label>
+<label class="radio-line"><input type="radio" name="caseChoice" value="no"> No <small><code>SUM</code> and <code>sum</code> are the same word.</small></label>
+</fieldset>
+
+<div style="margin-top:20px;"><label class="lbl" for="reflection">Reflection</label>
+<textarea id="reflection" rows="4" placeholder="Why did you choose this notation and these keywords?"></textarea>
+<p class="hint">Two or three sentences. At least 20 characters.</p></div>
+
+<h3 style="font-size:17px; margin:28px 0 8px;"><span id="previewName">Your language</span> <span id="previewState" class="status-pill invalid">Incomplete</span></h3>
+<pre id="programPreview" tabindex="0"></pre>
+<p class="hint" id="sampleNote"></p>
+<div id="validation" class="validation" role="status" aria-live="polite"></div>
+<div class="actions"><button type="button" id="download" class="navbtn">Download language.json</button></div>
+<p id="actionStatus" class="hint" role="status" aria-live="polite"></p>
+<h3 style="font-size:17px; margin:28px 0 8px;">language.json</h3>
+<pre id="jsonPreview" class="json" tabindex="0"></pre>
+
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Example</h2>
+<p>With function-like notation, newline terminator, no boundaries and case-sensitive keywords, a program in Calcora looks like this:</p>
+<pre><code>SHOW SUM(2, 3)
+SHOW PRODUCT(SUM(2, 3), 4)</code></pre>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Submission</h2>
+<p>Rename your downloaded <code>language.json</code> to <code>[UP ID username]-language.json</code>. For example, my file is <code>rhborromeo-language.json</code>. Submit it to the PE3 submission bin in Moodle. Keep a copy named <code>language.json</code>, because you will use it in PE4 and the final interpreter.</p>
+<div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:56px; padding-top:28px; border-top:1px solid var(--rule);"><a href="index.html" class="navbtn secondary">← Overview</a><a href="pe4.html" class="navbtn">Next: PE4 →</a></div>
+
+
+</div>
+<script src="assets/designer.js"></script>
+</body>
+</html>

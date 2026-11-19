@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 | Final Interpreter</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="scroll-page">
+<div class="index-wrap">
+
+<section class="hero" style="padding-top:0; padding-bottom:36px;">
+  <div class="eyebrow">FINAL INTERPRETER</div>
+  <h1>Final Interpreter</h1>
+</section>
+
+
+<p class="lede" style="margin-top:32px;">Combine your lexer, parser and evaluator into one program. Do not add any new language feature. Submit the result as one ZIP file in the final interpreter submission bin in Moodle.</p>
+<div class="diagram"><div class="pipeline"><div class="artifact">SOURCE PROGRAM</div><div class="arr">↓</div><div class="process p1">tokenize</div><div class="arr">↓</div><div class="process p2">parse</div><div class="arr">↓</div><div class="process p3">evaluate</div><div class="arr">↓</div><div class="artifact">RESULTS</div></div></div>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Files to Submit</h2>
+<p>Submit one ZIP file named <code>[UP ID username]-interpreter.zip</code> with these five files at the top level. Keep the original file names inside the ZIP, because the imports depend on them.</p>
+<pre><code>language.json
+lexer.py
+parser.py
+evaluator.py
+interpreter.py</code></pre>
+<p>Use your PE3 to PE5 files, with fixes. <code>interpreter.py</code> is the only new file.</p>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Entry Point</h2>
+<pre><code>from lexer import tokenize
+from parser import parse
+from evaluator import evaluate
+
+def run(source, spec):
+    tokens = tokenize(source, spec)
+    ast = parse(tokens, spec)
+    return evaluate(ast)</code></pre>
+<p>Make <code>run</code> return a list with one integer for each output statement. Do not print, and do not catch errors. The <code>ValueError</code>, <code>SyntaxError</code> and <code>ZeroDivisionError</code> from your three stages must reach the caller unchanged.</p>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Check Before Submitting</h2>
+<ul><li>Put the five files in one folder, and match the imports to the file names.</li><li>Make the parser's tree match what the evaluator expects: tuples, with Python integers for integer nodes.</li><li>Return several results for a program with several output statements.</li><li>Do not print anything or wait for input.</li><li>Use the <code>language.json</code> you submitted in PE3.</li></ul>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Testing</h2>
+<p>Put <a href="downloads/selftest.py" download><code>selftest.py</code></a> in the same folder as your five files and run:</p>
+<pre><code>python selftest.py final</code></pre>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Grading</h2>
+<p>The final interpreter is 20% of your course grade. I will run the tests on all submissions after the deadline on December 19.</p>
+<table><tr><th>Part</th><th>Weight</th><th>Checks</th></tr><tr><td>Execution</td><td>40%</td><td>Correct results for ordinary and nested programs</td></tr><tr><td>Language rules</td><td>25%</td><td>Your keywords, notation, terminator, case rule and boundaries</td></tr><tr><td>Error handling</td><td>20%</td><td>Invalid programs and division by zero</td></tr><tr><td>Integration</td><td>15%</td><td>Files, imports, and several statements in one program</td></tr></table>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Submission</h2>
+<p>Submit <code>[UP ID username]-interpreter.zip</code> to the final interpreter submission bin in Moodle.</p>
+<div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:56px; padding-top:28px; border-top:1px solid var(--rule);"><a href="pe5.html" class="navbtn secondary">← PE5</a><a href="index.html" class="navbtn">Back to overview</a></div>
+
+
+</div>
+</body>
+</html>

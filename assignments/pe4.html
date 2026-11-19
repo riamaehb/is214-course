@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 | PE4 Lexer and Parser</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="scroll-page">
+<div class="index-wrap">
+
+<section class="hero" style="padding-top:0; padding-bottom:36px;">
+  <div class="eyebrow">PROGRAMMING EXERCISE 4</div>
+  <h1>Lexer and Parser</h1>
+</section>
+
+
+<p class="lede" style="margin-top:32px;">Write a lexer and a parser for the language you designed in PE3. The lexer turns a program into tokens, and the parser turns the tokens into a tree. This is the longest exercise, so start early.</p>
+<div class="diagram"><div class="pipeline"><div class="artifact">SOURCE PROGRAM</div><div class="arr">↓</div><div class="process p1">tokenize</div><div class="arr">↓</div><div class="artifact">TOKENS</div><div class="arr">↓</div><div class="process p2">parse</div><div class="arr">↓</div><div class="artifact">AST</div></div></div>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Files to Submit</h2>
+<table><tr><th>File</th><th>Contents</th></tr><tr><td><code>[UP ID username]-language.json</code></td><td>The file from PE3</td></tr><tr><td><code>[UP ID username]-lexer.py</code></td><td>Your <code>tokenize</code> function</td></tr><tr><td><code>[UP ID username]-parser.py</code></td><td>Your <code>parse</code> function</td></tr></table>
+<p>Use Python 3 and the standard library only. Name the files exactly as shown, with your UP ID username in place of [UP ID username].</p>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Functions</h2>
+<pre><code># lexer.py
+def tokenize(source, spec):
+    ...   # returns a list of (type, lexeme) tuples
+
+# parser.py
+def parse(tokens, spec):
+    ...   # returns an AST</code></pre>
+<p><code>source</code> is the program as a string. <code>spec</code> is your <code>language.json</code>, loaded as a Python dictionary. Do not read files or print anything in either function.</p>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Rules</h2>
+<p>Follow the token types, grammar and tree shapes on the <a href="reference.html">Language Rules and Conventions page</a>. They are the same for every student.</p>
+<ul><li>Lexer: skip spaces and tabs. Return one <code>NEWLINE</code> token for each line break that ends a line with content, and none for blank lines. The Language Rules and Conventions page gives the details.</li><li>Lexer: read a word as a letter followed by letters, digits or underscores. If it is not one of your keywords, raise <code>ValueError("Invalid token")</code>. Raise the same error for any other unknown character.</li><li>Lexer: keep the lexeme exactly as typed, even when your language is case-insensitive.</li><li>Parser: use only token types, not keywords.</li><li>Parser: accept one statement per line, in both terminator modes. Treat a program with no output statement as a syntax error.</li><li>Parser: if the tokens do not follow the grammar, raise <code>SyntaxError("Invalid syntax")</code>.</li></ul>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Example</h2>
+<p>For the Calcora statement <code>SHOW SUM(2, 3)</code>, the lexer returns:</p>
+<pre><code>[('PRINT', 'SHOW'), ('ADD', 'SUM'), ('LEFT_PAREN', '('),
+ ('INTEGER_LITERAL', '2'), ('COMMA', ','), ('INTEGER_LITERAL', '3'),
+ ('RIGHT_PAREN', ')')]</code></pre>
+<p>and the parser returns:</p>
+<pre><code>("PROGRAM", [("PRINT", ("ADD", ("INTEGER", 2), ("INTEGER", 3)))])</code></pre>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Testing</h2>
+<p>Download <a href="downloads/selftest.py" download><code>selftest.py</code></a>, put it in the same folder as your files (with their original names), and run:</p>
+<pre><code>python selftest.py pe4</code></pre>
+<p>It generates programs from your <code>language.json</code> and compares your results with the expected ones. I will run the same kinds of tests, plus invalid programs for the parser, which the self-test does not include. Write a few of your own, such as a missing operand or a missing closing parenthesis. Your parser is tested with correct tokens, so a lexer mistake does not cost you parser points.</p>
+
+<h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Submission</h2>
+<p>Submit <code>[UP ID username]-language.json</code>, <code>[UP ID username]-lexer.py</code> and <code>[UP ID username]-parser.py</code> to the PE4 submission bin in Moodle. Do not submit <code>selftest.py</code>.</p>
+<div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:56px; padding-top:28px; border-top:1px solid var(--rule);"><a href="pe3.html" class="navbtn secondary">← PE3</a><a href="pe5.html" class="navbtn">Next: PE5 →</a></div>
+
+
+</div>
+</body>
+</html>

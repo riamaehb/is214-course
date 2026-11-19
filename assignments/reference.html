@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IS 214 | Language Rules and Conventions</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="scroll-page">
+<div class="index-wrap">
+<section class="hero" style="padding-top:0;">
+  <div class="eyebrow">IS 214 · PROGRAMMING EXERCISES</div>
+  <h1>Language Rules and Conventions</h1>
+  <p class="lede" style="max-width:620px; margin:22px auto 0;">This page is the reference for PE3 to the final interpreter. If another page seems to disagree with it, this page is correct. The conventions here will not change while you are working.</p>
+  <p style="text-align:center;"><a href="index.html">← Overview</a></p>
+</section>
+
+<h2 style="margin-top:40px;">Language</h2>
+<table><tr><th>Rule</th><th>Requirement</th></tr><tr><td>Program</td><td>One or more output statements</td></tr><tr><td>Output statement</td><td>The output keyword followed by an expression. It produces one integer result.</td></tr><tr><td>Expression</td><td>An integer literal, or an operation on two expressions. Operations can be nested.</td></tr><tr><td>Operations</td><td>Addition, subtraction, multiplication and division. Each takes exactly two operands.</td></tr><tr><td>Integer literals</td><td>One or more digits (0 to 9). Leading zeros are allowed. There are no negative literals, but results can be negative.</td></tr><tr><td>Division</td><td>Integer division that truncates toward zero. <code>(0 - 7) / 2</code> is <code>-3</code>.</td></tr><tr><td>Division by zero</td><td>An evaluation error</td></tr><tr><td>Not supported</td><td>Variables, assignments, functions, strings, comments, other operators</td></tr></table>
+
+<h2 style="margin-top:40px;">language.json</h2>
+<table><tr><th>Field</th><th>Values</th></tr><tr><td><code>language_name</code></td><td>Starts with an English letter; letters, digits, underscores; at most 40 characters</td></tr><tr><td><code>notation</code></td><td><code>"function"</code> or <code>"prefix"</code></td></tr><tr><td><code>keywords</code></td><td><code>print</code>, <code>add</code>, <code>sub</code>, <code>mul</code>, <code>div</code>. Each starts with a letter and uses letters, digits or underscores. All are different, even ignoring case.</td></tr><tr><td><code>statement_terminator</code></td><td><code>"newline"</code> or <code>"semicolon"</code></td></tr><tr><td><code>case_sensitive</code></td><td><code>true</code> or <code>false</code></td></tr><tr><td><code>program_boundaries</code></td><td><code>{{"enabled": false}}</code> or <code>{{"enabled": true, "start": "...", "end": "..."}}</code></td></tr><tr><td><code>design_reflection</code></td><td>Your text. It does not change the language.</td></tr></table>
+
+<h2 style="margin-top:40px;">Layout</h2>
+<table><tr><th>Rule</th><th>Requirement</th></tr><tr><td>Statements</td><td>One per line, in both terminator modes. A statement cannot span lines.</td></tr><tr><td>Newline mode</td><td>The line break ends the statement. The line break after the last statement is optional.</td></tr><tr><td>Semicolon mode</td><td>Every statement ends with <code>;</code> before the line break. The line break after the last statement is optional.</td></tr><tr><td>Boundaries</td><td>If enabled, the start keyword is the first line and the end keyword is the last. Each is alone on its line and takes no semicolon.</td></tr><tr><td>Blank lines</td><td>Ignored. They produce no <code>NEWLINE</code> token, in both terminator modes.</td></tr><tr><td>Spaces and tabs</td><td>Optional between tokens, wherever the tokens stay distinct. Prefix notation needs spaces between operands: <code>(SUM 2 3)</code>.</td></tr><tr><td>Line endings</td><td><code>\n</code>, <code>\r\n</code> and <code>\r</code> each count as one line break</td></tr></table>
+
+<h2 style="margin-top:40px;">Tokens</h2>
+<p>The lexer returns a list of <code>(type, lexeme)</code> tuples. Types are fixed. The lexeme is the exact text from the source.</p>
+<table><tr><th>Type</th><th>When it appears</th></tr><tr><td><code>PRINT</code></td><td>The output keyword</td></tr><tr><td><code>ADD</code>, <code>SUB</code>, <code>MUL</code>, <code>DIV</code></td><td>The keyword for that operation</td></tr><tr><td><code>INTEGER_LITERAL</code></td><td>A run of digits</td></tr><tr><td><code>LEFT_PAREN</code>, <code>RIGHT_PAREN</code></td><td><code>(</code> and <code>)</code></td></tr><tr><td><code>COMMA</code></td><td><code>,</code>, in function-like notation only</td></tr><tr><td><code>SEMICOLON</code></td><td><code>;</code>, in semicolon mode only</td></tr><tr><td><code>NEWLINE</code></td><td>A line break after a line with content. The lexeme is <code>\n</code>, even for <code>\r\n</code> or <code>\r</code>. Blank lines and a break at the start of a program produce none, so consecutive breaks produce one. A last line without a break produces none. In semicolon mode, the token comes after the <code>SEMICOLON</code> token.</td></tr><tr><td><code>START</code>, <code>END</code></td><td>The boundary keywords, only when enabled</td></tr></table>
+<p>A word starts with an English letter and continues with letters, digits or underscores. The whole word is read, then compared with the keywords. If <code>case_sensitive</code> is false, the comparison ignores case. A word that is not a keyword is an error. Any character that is not part of the language is an error, including <code>.</code>, <code>+</code>, <code>-</code>, and letters outside English. A comma is valid only in function-like notation and a semicolon only in semicolon mode.</p>
+
+<h2 style="margin-top:40px;">Grammar</h2>
+<pre><code>program   ::= [START NEWLINE] statement+ [END [NEWLINE]]       (START and END only if boundaries are on)
+statement ::= PRINT expr [SEMICOLON] (NEWLINE | end of input)    (SEMICOLON only in semicolon mode)
+
+function-like:   expr ::= INTEGER_LITERAL | OP LEFT_PAREN expr COMMA expr RIGHT_PAREN
+prefix:          expr ::= INTEGER_LITERAL | LEFT_PAREN OP expr expr RIGHT_PAREN
+
+OP ::= ADD | SUB | MUL | DIV</code></pre>
+
+<h2 style="margin-top:40px;">Syntax Tree</h2>
+<table><tr><th>Node</th><th>Shape</th></tr><tr><td>Program</td><td><code>("PROGRAM", [statement, ...])</code></td></tr><tr><td>Output statement</td><td><code>("PRINT", expression)</code></td></tr><tr><td>Integer</td><td><code>("INTEGER", 2)</code>, with a Python <code>int</code></td></tr><tr><td>Operation</td><td><code>("ADD", left, right)</code>, and likewise <code>SUB</code>, <code>MUL</code>, <code>DIV</code></td></tr></table>
+
+<h2 style="margin-top:40px;">Errors</h2>
+<table><tr><th>Problem</th><th>Reported by</th><th>Exception</th></tr><tr><td>Invalid character or word, such as <code>@</code> or an unknown word</td><td>Lexer</td><td><code>ValueError("Invalid token")</code></td></tr><tr><td>Structure that does not follow the grammar, such as a missing operand</td><td>Parser</td><td><code>SyntaxError("Invalid syntax")</code></td></tr><tr><td>Division by zero</td><td>Evaluator</td><td><code>ZeroDivisionError("Division by zero")</code></td></tr></table>
+<p>If an output statement fails, the whole call raises the error and returns no results. The messages must match exactly.</p>
+
+<h2 style="margin-top:40px;">Functions</h2>
+<table><tr><th>Exercise</th><th>Function</th><th>Returns</th></tr><tr><td>PE4</td><td><code>tokenize(source, spec)</code></td><td>List of <code>(type, lexeme)</code> tuples</td></tr><tr><td>PE4</td><td><code>parse(tokens, spec)</code></td><td>A <code>PROGRAM</code> tree</td></tr><tr><td>PE5</td><td><code>evaluate(ast)</code></td><td>List of integers, one per output statement</td></tr><tr><td>Final</td><td><code>run(source, spec)</code></td><td>List of integers, one per output statement</td></tr></table>
+
+<h2 style="margin-top:40px;">Differences From PE2</h2>
+<p>PE2's <code>tokenize(source)</code> works on a fixed language and reports an invalid character as an <code>("ERROR", text)</code> token. The PE4 lexer works on your language and raises <code>ValueError</code> instead, so the three stages report problems in the same way. The shared token types (<code>INTEGER_LITERAL</code>, <code>LEFT_PAREN</code>, <code>RIGHT_PAREN</code>) have the same names in both.</p>
+
+<footer>IS 214 · Principles of Programming Languages</footer>
+</div>
+</body>
+</html>
