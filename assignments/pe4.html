@@ -16,7 +16,7 @@
 </section>
 
 
-<p class="lede" style="margin-top:32px;">Write a lexer and a parser for the language you designed in PE3. The lexer turns a program into tokens, and the parser turns the tokens into a tree. This is the longest exercise, so start early.</p>
+<p class="lede" style="margin-top:32px;">Write a lexer and a parser for the language you designed in PE3. The lexer turns a program into tokens, and the parser turns the tokens into a tree. </p>
 <div class="diagram"><div class="pipeline"><div class="artifact">SOURCE PROGRAM</div><div class="arr">↓</div><div class="process p1">tokenize</div><div class="arr">↓</div><div class="artifact">TOKENS</div><div class="arr">↓</div><div class="process p2">parse</div><div class="arr">↓</div><div class="artifact">AST</div></div></div>
 
 <h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Files to Submit</h2>
@@ -48,10 +48,10 @@ def parse(tokens, spec):
 <h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Testing</h2>
 <p>Download <a href="downloads/selftest.py" download><code>selftest.py</code></a>, put it in the same folder as your files (with their original names), and run:</p>
 <pre><code>python selftest.py pe4</code></pre>
-<p>It generates programs from your <code>language.json</code> and compares your results with the expected ones. I will run the same kinds of tests, plus invalid programs for the parser, which the self-test does not include. Write a few of your own, such as a missing operand or a missing closing parenthesis. Your parser is tested with correct tokens, so a lexer mistake does not cost you parser points.</p>
+<p>It generates programs from your <code>language.json</code> and compares your results with the expected ones. </p>
 
 <h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Submission</h2>
-<p>Submit <code>[UP ID username]-language.json</code>, <code>[UP ID username]-lexer.py</code> and <code>[UP ID username]-parser.py</code> to the PE4 submission bin in Moodle. Do not submit <code>selftest.py</code>.</p>
+<p>Submit <code>[UP ID username]-language.json</code>, <code>[UP ID username]-lexer.py</code> and <code>[UP ID username]-parser.py</code> in the submission bin. Do not submit <code>selftest.py</code>.</p>
 <div class="standalone-nav" style="gap:12px; flex-wrap:wrap; margin-top:56px; padding-top:28px; border-top:1px solid var(--rule);"><a href="pe3.html" class="navbtn secondary">← PE3</a><a href="pe5.html" class="navbtn">Next: PE5 →</a></div>
 
 

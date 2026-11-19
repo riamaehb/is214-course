@@ -16,7 +16,7 @@
 </section>
 
 
-<p class="lede" style="margin-top:32px;">Combine your lexer, parser and evaluator into one program. Do not add any new language feature. Submit the result as one ZIP file in the final interpreter submission bin in Moodle.</p>
+<p class="lede" style="margin-top:32px;">Combine your lexer, parser and evaluator into one program. Do not add any new language feature. Submit the result as one ZIP file in the final interpreter submission bin.</p>
 <div class="diagram"><div class="pipeline"><div class="artifact">SOURCE PROGRAM</div><div class="arr">↓</div><div class="process p1">tokenize</div><div class="arr">↓</div><div class="process p2">parse</div><div class="arr">↓</div><div class="process p3">evaluate</div><div class="arr">↓</div><div class="artifact">RESULTS</div></div></div>
 
 <h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Files to Submit</h2>
@@ -26,7 +26,7 @@ lexer.py
 parser.py
 evaluator.py
 interpreter.py</code></pre>
-<p>Use your PE3 to PE5 files, with fixes. <code>interpreter.py</code> is the only new file.</p>
+<p>Use your PE3 to PE5 files. You can fix bugs in them before you submit. <code>interpreter.py</code> is the only new file.</p>
 
 <h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Entry Point</h2>
 <pre><code>from lexer import tokenize
@@ -48,7 +48,7 @@ def run(source, spec):
 
 <h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Grading</h2>
 <p>The final interpreter is 20% of your course grade. I will run the tests on all submissions after the deadline on December 19.</p>
-<table><tr><th>Part</th><th>Weight</th><th>Checks</th></tr><tr><td>Execution</td><td>40%</td><td>Correct results for ordinary and nested programs</td></tr><tr><td>Language rules</td><td>25%</td><td>Your keywords, notation, terminator, case rule and boundaries</td></tr><tr><td>Error handling</td><td>20%</td><td>Invalid programs and division by zero</td></tr><tr><td>Integration</td><td>15%</td><td>Files, imports, and several statements in one program</td></tr></table>
+
 
 <h2 style="margin-top:40px; margin-bottom:14px; font-size:26px;">Submission</h2>
 <p>Submit <code>[UP ID username]-interpreter.zip</code> to the final interpreter submission bin in Moodle.</p>
